@@ -1,17 +1,9 @@
 #include "ThreadPool.hpp"
 
-// TODO: Validate different work priorities are working as expected
-// TODO: This is a custom wrapper but looks like a winapi wrapper/or OG winapi, lets avoid that and rename it
-PFULL_TP_WORK ThreadPoolAllocateWork(PTP_WORK_CALLBACK pWorkCallback, PVOID pWorkContext, TP_CALLBACK_PRIORITY CallbackPriority, PFULL_TP_POOL pThreadPoolPool) {
+PFULL_TP_WORK w_CreateThreadpoolWork(PTP_WORK_CALLBACK pWorkCallback, PVOID pWorkContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
 	auto pWorkItem = (PFULL_TP_WORK)CreateThreadpoolWork(pWorkCallback, pWorkContext, NULL);
 	if (pWorkItem == NULL) {
 		throw WindowsException("CreateThreadpoolWork");
-	}
-
-	pWorkItem->CleanupGroupMember.CallbackPriority = CallbackPriority;
-
-	if (pThreadPoolPool) {
-		pWorkItem->CleanupGroupMember.Pool = pThreadPoolPool;
 	}
 
 	return pWorkItem;

