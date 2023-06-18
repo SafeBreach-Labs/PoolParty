@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <vector>
 #include <Windows.h>
 #include <emmintrin.h>
 #include <ntstatus.h>
@@ -210,3 +211,7 @@ HANDLE w_NtAlpcConnectPort(
     PALPC_MESSAGE_ATTRIBUTES InMessageAttributes,
     PLARGE_INTEGER Timeout
 );
+
+std::vector<BYTE> w_NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass);
+
+std::vector<BYTE> w_NtQueryObject(HANDLE hObject, OBJECT_INFORMATION_CLASS ObjectInformationClass);

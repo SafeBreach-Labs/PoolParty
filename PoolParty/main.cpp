@@ -95,7 +95,6 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 	}
 }
 
-
 int main(int argc, char** argv) {
 
 	try 
