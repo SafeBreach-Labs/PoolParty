@@ -27,7 +27,7 @@ std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hS
 	return std::shared_ptr<HANDLE>(new HANDLE(hTargetHandle), HandleDeleter());
 }
 
-HANDLE w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitalState, LPWSTR lpName) {
+std::shared_ptr<HANDLE> w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitalState, LPWSTR lpName) {
 	auto hEvent = CreateEvent(lpEventAttributes, bManualReset, bInitalState, lpName);
 	if (hEvent == NULL) {
 		throw WindowsException("CreateEvent");
@@ -38,10 +38,10 @@ HANDLE w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset,
 		std::printf("WARNING: The event `%S` already exists\n", lpName);
 	}
 
-	return hEvent;
+	return std::shared_ptr<HANDLE>(new HANDLE(hEvent), HandleDeleter());
 }
 
-HANDLE w_CreateFile(
+std::shared_ptr<HANDLE> w_CreateFile(
 	LPCWSTR lpFileName,
 	DWORD dwDesiredAccess,
 	DWORD dwShareMode,
@@ -55,7 +55,7 @@ HANDLE w_CreateFile(
 		throw WindowsException("CreateFile");
 	}
 
-	return hFile;
+	return std::shared_ptr<HANDLE>(new HANDLE(hFile), HandleDeleter());
 }
 
 void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped) {
@@ -75,7 +75,7 @@ void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, L
 
 }
 
-HANDLE w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes, LPWSTR lpName)
+std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes, LPWSTR lpName)
 {
 	auto hJob = CreateJobObject(lpJobAttributes, lpName);
 	if (hJob == NULL) {
@@ -87,7 +87,7 @@ HANDLE w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes, LPWSTR lpName)
 		std::printf("WARNING: The job `%S` already exists\n", lpName);
 	}
 
-	return hJob;
+	return std::shared_ptr<HANDLE>(new HANDLE(hJob), HandleDeleter());
 }
 
 void w_SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, LPVOID lpJobObjectInformation, DWORD cbJobObjectInformationLength)

