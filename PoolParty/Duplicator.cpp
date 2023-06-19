@@ -5,12 +5,12 @@ WorkerFactoryHandleDuplicator::WorkerFactoryHandleDuplicator(DWORD dwTargetPid, 
 
 
 // TODO: Make this more generic and support not only TpWorkerFactory duplication
-HANDLE WorkerFactoryHandleDuplicator::Duplicate(DWORD dwDesiredPermissions) {
+std::shared_ptr<HANDLE> WorkerFactoryHandleDuplicator::Duplicate(DWORD dwDesiredPermissions) {
 
     auto pSystemInformation = w_NtQuerySystemInformation((SYSTEM_INFORMATION_CLASS)16);
     auto pSystemHandleInformation = (PSYSTEM_HANDLE_INFORMATION)pSystemInformation.data();
 
-    HANDLE hDuplicatedObject;
+    std::shared_ptr<HANDLE> p_hDuplicatedObject;
     std::vector<BYTE> pObjectInformation;
     PPUBLIC_OBJECT_TYPE_INFORMATION pObjectTypeInformation;
 
@@ -22,17 +22,17 @@ HANDLE WorkerFactoryHandleDuplicator::Duplicate(DWORD dwDesiredPermissions) {
                 continue;
             }
 
-            hDuplicatedObject = w_DuplicateHandle(m_hTargetPid, UlongToHandle(pSystemHandleInformation->Handles[i].HandleValue), GetCurrentProcess(), dwDesiredPermissions, FALSE, NULL);
+            p_hDuplicatedObject = w_DuplicateHandle(m_hTargetPid, UlongToHandle(pSystemHandleInformation->Handles[i].HandleValue), GetCurrentProcess(), dwDesiredPermissions, FALSE, NULL);
 
 
-            pObjectInformation = w_NtQueryObject(hDuplicatedObject, ObjectTypeInformation);
+            pObjectInformation = w_NtQueryObject(*p_hDuplicatedObject, ObjectTypeInformation);
             pObjectTypeInformation = (PPUBLIC_OBJECT_TYPE_INFORMATION)pObjectInformation.data();
 
             if (std::wstring(L"TpWorkerFactory") != std::wstring(pObjectTypeInformation->TypeName.Buffer)) {
                 continue;
             }
 
-            return hDuplicatedObject;
+            return p_hDuplicatedObject;
         } 
         catch (WindowsException)
         {

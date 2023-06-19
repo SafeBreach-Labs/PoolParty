@@ -31,7 +31,7 @@ class PoolParty
 protected:
 	DWORD m_dwTargetPid;
 	std::shared_ptr<HANDLE> m_p_hTargetPid;
-	HANDLE m_hWorkerFactory;
+	std::shared_ptr<HANDLE> m_p_hWorkerFactory;
 	unsigned char* m_cShellcode;
 	SIZE_T m_szShellcodeSize;
 	PVOID m_ShellcodeAddress;
@@ -40,7 +40,7 @@ protected:
 public:
 	PoolParty(DWORD dwTargetPid, unsigned char* cShellcode);
 	std::shared_ptr<HANDLE> GetTargetProcessHandle();
-	HANDLE GetWorkerFactoryHandle();
+	std::shared_ptr<HANDLE> GetWorkerFactoryHandle();
 	WORKER_FACTORY_BASIC_INFORMATION GetWorkerFactoryBasicInformation();
 	LPVOID AllocateShellcodeMemory();
 	void WriteShellcode();

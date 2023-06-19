@@ -19,12 +19,12 @@ std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle
 	return std::shared_ptr<HANDLE>(new HANDLE(hTargetPid), HandleDeleter());
 }
 
-HANDLE w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions) {
+std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions) {
 	HANDLE hTargetHandle;
 	if (!DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, &hTargetHandle, dwDesiredAccess, bInheritHandle, dwOptions)) {
 		throw WindowsException("DuplicateHandle");
 	}
-	return hTargetHandle;
+	return std::shared_ptr<HANDLE>(new HANDLE(hTargetHandle), HandleDeleter());
 }
 
 HANDLE w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitalState, LPWSTR lpName) {

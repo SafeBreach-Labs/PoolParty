@@ -13,6 +13,6 @@ private:
 
 public:
 	WorkerFactoryHandleDuplicator(DWORD dwTargetPid, HANDLE hTargetPid);
-	HANDLE Duplicate(DWORD dwDesiredPermissions);
+	std::shared_ptr<HANDLE> Duplicate(DWORD dwDesiredPermissions);
 	~WorkerFactoryHandleDuplicator();
 };
