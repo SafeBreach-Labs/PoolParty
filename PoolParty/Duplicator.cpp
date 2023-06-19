@@ -1,7 +1,7 @@
 #include "Duplicator.hpp"
 
 WorkerFactoryHandleDuplicator::WorkerFactoryHandleDuplicator(DWORD dwTargetPid, HANDLE hTarget) 
-	: dwTargetPid(dwTargetPid), hTargetPid(hTarget) {}
+	: m_dwTargetPid(dwTargetPid), m_hTargetPid(hTarget) {}
 
 
 // TODO: Make this more generic and support not only TpWorkerFactory duplication
@@ -17,12 +17,12 @@ HANDLE WorkerFactoryHandleDuplicator::Duplicate(DWORD dwDesiredPermissions) {
     for (auto i = 0; i < pSystemHandleInformation->NumberOfHandles; i++)
     {
         try {
-            if (pSystemHandleInformation->Handles[i].UniqueProcessId != this->dwTargetPid)
+            if (pSystemHandleInformation->Handles[i].UniqueProcessId != m_dwTargetPid)
             {
                 continue;
             }
 
-            hDuplicatedObject = w_DuplicateHandle(this->hTargetPid, (HANDLE)pSystemHandleInformation->Handles[i].HandleValue, GetCurrentProcess(), dwDesiredPermissions, FALSE, NULL);
+            hDuplicatedObject = w_DuplicateHandle(m_hTargetPid, UlongToHandle(pSystemHandleInformation->Handles[i].HandleValue), GetCurrentProcess(), dwDesiredPermissions, FALSE, NULL);
 
 
             pObjectInformation = w_NtQueryObject(hDuplicatedObject, ObjectTypeInformation);

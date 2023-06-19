@@ -1,11 +1,22 @@
 #include "WinApi.hpp"
 
-HANDLE w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId) {
+struct HandleDeleter
+{
+	void operator()(HANDLE* handle) const
+	{
+		if (*handle != NULL && *handle != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(*handle);
+		}
+	}
+};
+
+std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId) {
 	auto hTargetPid = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
 	if (hTargetPid == NULL || hTargetPid == INVALID_HANDLE_VALUE) {
 		throw WindowsException("OpenProcess");
 	}
-	return hTargetPid;
+	return std::shared_ptr<HANDLE>(new HANDLE(hTargetPid), HandleDeleter());
 }
 
 HANDLE w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions) {

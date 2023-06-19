@@ -8,8 +8,8 @@
 
 class WorkerFactoryHandleDuplicator {
 private: 
-	DWORD dwTargetPid;
-	HANDLE hTargetPid;
+	DWORD m_dwTargetPid;
+	HANDLE m_hTargetPid;
 
 public:
 	WorkerFactoryHandleDuplicator(DWORD dwTargetPid, HANDLE hTargetPid);

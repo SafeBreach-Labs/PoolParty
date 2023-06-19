@@ -29,17 +29,17 @@ typedef struct _POOL_PARTY_CMD_ARGS
 class PoolParty
 {
 protected:
-	DWORD dwTargetPid;
-	HANDLE hTargetPid;
-	HANDLE hWorkerFactory;
-	unsigned char* cShellcode;
-	SIZE_T szShellcodeSize;
-	PVOID ShellcodeAddress;
-	WORKER_FACTORY_BASIC_INFORMATION WorkerFactoryInformation;
+	DWORD m_dwTargetPid;
+	std::shared_ptr<HANDLE> m_p_hTargetPid;
+	HANDLE m_hWorkerFactory;
+	unsigned char* m_cShellcode;
+	SIZE_T m_szShellcodeSize;
+	PVOID m_ShellcodeAddress;
+	WORKER_FACTORY_BASIC_INFORMATION m_WorkerFactoryInformation;
 
 public:
 	PoolParty(DWORD dwTargetPid, unsigned char* cShellcode);
-	HANDLE GetTargetProcessHandle();
+	std::shared_ptr<HANDLE> GetTargetProcessHandle();
 	HANDLE GetWorkerFactoryHandle();
 	WORKER_FACTORY_BASIC_INFORMATION GetWorkerFactoryBasicInformation();
 	LPVOID AllocateShellcodeMemory();

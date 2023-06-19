@@ -98,6 +98,7 @@ HANDLE w_NtAlpcConnectPort(
     return hAlpc;
 }
 
+// TODO: Add template that holds the structure, allocate on the stack and return it
 std::vector<BYTE> w_NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass) 
 {
     ULONG SystemInformationLength = 0;
@@ -114,7 +115,7 @@ std::vector<BYTE> w_NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInfo
     {
         throw WindowsException("NtQuerySystemInformation");
     }
-
+   
     return SystemInformation;
 }
 
