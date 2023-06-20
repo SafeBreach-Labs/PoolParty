@@ -96,7 +96,18 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 	}
 }
 
+void InitLogging() 
+{
+	// TODO: Filter the ThreadId field of the logger
+	//boost::log::add_console_log(std::cout, boost::log::keywords::format = "[%TimeStamp%] [%Severity%] %Message%");
+
+	boost::log::core::get()->set_filter(
+		boost::log::trivial::severity >= boost::log::trivial::info
+	);
+}
+
 int main(int argc, char** argv) {
+	InitLogging();
 
 	try 
 	{
