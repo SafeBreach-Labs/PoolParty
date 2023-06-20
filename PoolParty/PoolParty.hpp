@@ -44,7 +44,7 @@ public:
 	std::shared_ptr<HANDLE> GetTargetProcessHandle();
 	std::shared_ptr<HANDLE> GetWorkerFactoryHandle();
 	WORKER_FACTORY_BASIC_INFORMATION GetWorkerFactoryBasicInformation();
-	LPVOID AllocateShellcodeMemory();
+	virtual LPVOID AllocateShellcodeMemory();
 	void WriteShellcode();
 	virtual void SetupExecution() PURE;
 	void Inject();
@@ -62,6 +62,7 @@ class WorkerFactoryStartRoutineOverwrite : public PoolParty {
 public:
 	WorkerFactoryStartRoutineOverwrite(DWORD dwTargetPid, unsigned char* cShellcode);
 	void SetupExecution() override;
+	LPVOID AllocateShellcodeMemory() override;
 	~WorkerFactoryStartRoutineOverwrite();
 };
 

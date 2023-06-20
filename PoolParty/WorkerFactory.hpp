@@ -99,14 +99,30 @@ NTSTATUS NTAPI NtQueryInformationWorkerFactory(
     _Out_opt_ PULONG ReturnLength
 );
 
+EXTERN_C
+NTSTATUS NTAPI NtSetInformationWorkerFactory(
+    _In_ HANDLE WorkerFactoryHandle,
+    _In_ WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
+    _In_reads_bytes_(WorkerFactoryInformationLength) PVOID WorkerFactoryInformation,
+    _In_ ULONG WorkerFactoryInformationLength
+);
+
 // ------------//
 // Proto types //
 // ------------//
 
+// TODO: Return the actual buffer for better usage and readability
 void w_NtQueryInformationWorkerFactory(
     HANDLE hWorkerFactory, 
     WORKERFACTORYINFOCLASS WorkerFactoryInformationClass, 
     PVOID WorkerFactoryInformation,
     ULONG WorkerFactoryInformationLength,
     PULONG ReturnLength
+);
+
+void w_NtSetInformationWorkerFactory(
+    HANDLE hWorkerFactory,
+    WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
+    PVOID WorkerFactoryInformation,
+    ULONG WorkerFactoryInformationLength
 );
