@@ -15,6 +15,8 @@
 #include "ThreadPool.hpp"
 #include "WinApi.hpp"
 
+// TODO: Change macros to constexpr if possible
+
 #define POOL_PARTY_ALPC_PORT_NAME L"\\RPC Control\\PoolPartyALPCPort"
 
 #define INIT_UNICODE_STRING(str) { sizeof(str) - sizeof((str)[0]), sizeof(str) - sizeof((str)[0]), const_cast<PWSTR>(str) }

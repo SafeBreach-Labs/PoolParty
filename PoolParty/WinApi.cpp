@@ -1,16 +1,12 @@
 #include "WinApi.hpp"
 
-class HandleDeleter
+void HandleDeleter::operator()(HANDLE* handle)
 {
-public:
-    void operator()(HANDLE* handle) const
-    {
-        if (*handle != NULL && *handle != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(*handle);
-        }
-    }
-};
+	if (*handle != NULL && *handle != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(*handle);
+	}
+}
 
 std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId) {
 	auto hTargetPid = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
