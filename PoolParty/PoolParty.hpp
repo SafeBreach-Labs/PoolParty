@@ -47,7 +47,6 @@ public:
 	LPVOID AllocateShellcodeMemory();
 	void WriteShellcode();
 	virtual void SetupExecution() PURE;
-	virtual void TriggerExecution();
 	void Inject();
 	~PoolParty();
 };
@@ -63,7 +62,6 @@ class WorkerFactoryStartRoutineOverwrite : public PoolParty {
 public:
 	WorkerFactoryStartRoutineOverwrite(DWORD dwTargetPid, unsigned char* cShellcode);
 	void SetupExecution() override;
-	void TriggerExecution() override;
 	~WorkerFactoryStartRoutineOverwrite();
 };
 
