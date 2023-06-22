@@ -23,6 +23,9 @@
 // TODO: Change macros to constexpr if possible
 
 #define POOL_PARTY_ALPC_PORT_NAME L"\\RPC Control\\PoolPartyALPCPort"
+#define POOL_PARTY_EVENT_NAME L"PoolPartyEvent"
+#define POOL_PARTY_FILE_NAME L"PoolParty_invitation.txt"
+#define POOL_PARTY_JOB_NAME L"PoolPartyJob"
 
 #define INIT_UNICODE_STRING(str) { sizeof(str) - sizeof((str)[0]), sizeof(str) - sizeof((str)[0]), const_cast<PWSTR>(str) }
 
