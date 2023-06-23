@@ -14,11 +14,11 @@
 #include "Misc.hpp"
 #include "Native.hpp"
 #include "WorkerFactory.hpp"
-#include "Duplicator.hpp"
 #include "Exceptions.hpp"
 #include "Memory.hpp"
 #include "ThreadPool.hpp"
 #include "WinApi.hpp"
+#include "HandleHijacker.hpp"
 
 // TODO: Change macros to constexpr if possible
 

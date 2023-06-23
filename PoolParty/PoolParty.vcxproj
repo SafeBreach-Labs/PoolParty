@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Duplicator.hpp" />
     <ClInclude Include="Exceptions.hpp" />
+    <ClInclude Include="HandleHijacker.hpp" />
     <ClInclude Include="Memory.hpp" />
     <ClInclude Include="Misc.hpp" />
     <ClInclude Include="Native.hpp" />
@@ -30,8 +30,8 @@
     <ClInclude Include="WorkerFactory.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Duplicator.cpp" />
     <ClCompile Include="Exceptions.cpp" />
+    <ClCompile Include="HandleHijacker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Misc.cpp" />
