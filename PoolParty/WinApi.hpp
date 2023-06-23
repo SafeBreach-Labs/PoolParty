@@ -9,14 +9,6 @@
 
 #include "Exceptions.hpp"
 
-// TODO: Export to a file
-
-class HandleDeleter
-{
-public:
-	void operator()(HANDLE* handle);
-};
-
 // ------------//
 // Proto types //
 // ------------//

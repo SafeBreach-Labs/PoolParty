@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Exceptions.hpp" />
+    <ClInclude Include="HandleDeleter.hpp" />
     <ClInclude Include="HandleHijacker.hpp" />
     <ClInclude Include="Memory.hpp" />
     <ClInclude Include="Misc.hpp" />
@@ -31,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Exceptions.cpp" />
+    <ClCompile Include="HandleDeleter.cpp" />
     <ClCompile Include="HandleHijacker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory.cpp" />

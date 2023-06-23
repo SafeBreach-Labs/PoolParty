@@ -89,32 +89,3 @@ bool WorkerFactoryHandleHijacker::IsDesiredOwnerProcess(DWORD dwOwnerProcessId)
 WorkerFactoryHandleHijacker::~WorkerFactoryHandleHijacker()
 {
 }
-
-FileHandleHijacker::FileHandleHijacker(std::wstring wsTargetFileName)
-	: HandleHijacker{ std::wstring(L"File") }, m_wsTargetFileName(wsTargetFileName)
-{
-}
-
-bool FileHandleHijacker::IsDesiredOwnerProcess(DWORD dwOwnerProcessId)
-{
-    if (dwOwnerProcessId == 30280) {
-        return true;
-    }
-    return false;
-}
-
-
-bool FileHandleHijacker::IsDesiredHandle(std::shared_ptr<HANDLE> p_hHijackedObject)
-{
-    auto wsFileName = w_GetFinalPathNameByHandle(*p_hHijackedObject, FILE_NAME_NORMALIZED);
-    if (m_wsTargetFileName == wsFileName)
-    {
-        return true;
-    }
-    return false;
-}
-
-
-FileHandleHijacker::~FileHandleHijacker()
-{
-}

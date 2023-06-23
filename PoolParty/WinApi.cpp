@@ -1,13 +1,5 @@
 #include "WinApi.hpp"
 
-void HandleDeleter::operator()(HANDLE* handle)
-{
-	if (*handle != NULL && *handle != INVALID_HANDLE_VALUE)
-	{
-		CloseHandle(*handle);
-	}
-}
-
 std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId) {
 	auto hTargetPid = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
 	if (hTargetPid == NULL || hTargetPid == INVALID_HANDLE_VALUE) {
@@ -99,18 +91,4 @@ void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess)
 	if (!AssignProcessToJobObject(hJob, hProcess)) {
 		throw WindowsException("AssignProcessToJobObject");
 	}
-}
-
-// TODO: Make it nicer
-std::wstring w_GetFinalPathNameByHandle(HANDLE hFile, DWORD dwFlags)
-{
-	WCHAR lpwsFilePath[MAX_PATH] = { 0 };
-	GetFinalPathNameByHandleW(hFile, lpwsFilePath, MAX_PATH, dwFlags);
-	if (GetLastError() != ERROR_SUCCESS)
-	{
-		throw WindowsException("GetFinalPathNameByHandle");
-	}
-
-	/* Removing //??// from path */
-	return std::wstring(lpwsFilePath).erase(0, 4);
 }
