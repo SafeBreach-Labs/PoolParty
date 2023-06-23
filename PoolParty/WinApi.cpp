@@ -100,3 +100,17 @@ void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess)
 		throw WindowsException("AssignProcessToJobObject");
 	}
 }
+
+// TODO: Make it nicer
+std::wstring w_GetFinalPathNameByHandle(HANDLE hFile, DWORD dwFlags)
+{
+	WCHAR lpwsFilePath[MAX_PATH] = { 0 };
+	GetFinalPathNameByHandleW(hFile, lpwsFilePath, MAX_PATH, dwFlags);
+	if (GetLastError() != ERROR_SUCCESS)
+	{
+		throw WindowsException("GetFinalPathNameByHandle");
+	}
+
+	/* Removing //??// from path */
+	return std::wstring(lpwsFilePath).erase(0, 4);
+}

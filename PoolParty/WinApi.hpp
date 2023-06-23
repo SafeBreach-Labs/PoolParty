@@ -44,3 +44,5 @@ std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes,
 void w_SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, LPVOID lpJobObjectInformation, DWORD cbJobObjectInformationLength);
 
 void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess);
+
+std::wstring w_GetFinalPathNameByHandle(HANDLE hFile, DWORD dwFlags);

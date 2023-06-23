@@ -20,7 +20,7 @@ PFULL_TP_WAIT w_CreateThreadpoolWait(PTP_WAIT_CALLBACK pWaitCallback, PVOID pWai
 PFULL_TP_IO w_CreateThreadpoolIo(HANDLE hFile, PTP_WIN32_IO_CALLBACK pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
 	auto pTpIo = (PFULL_TP_IO)CreateThreadpoolIo(hFile, pCallback, pContext, pCallbackEnviron);
 	if (pTpIo == NULL) {
-		throw WindowsException("CreateThreadpoolWait");
+		throw WindowsException("CreateThreadpoolIo");
 	}
 	return pTpIo;
 }

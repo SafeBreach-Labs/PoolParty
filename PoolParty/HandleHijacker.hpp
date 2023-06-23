@@ -18,6 +18,7 @@ public:
 	~HandleHijacker();
 };
 
+// TODO: Make object name static
 class WorkerFactoryHandleHijacker : public HandleHijacker {
 private:
 	DWORD m_dwTargetPid;
@@ -25,4 +26,15 @@ public:
 	WorkerFactoryHandleHijacker(DWORD dwTargetPid);
 	bool IsDesiredOwnerProcess(DWORD dwOwnerProcessId) override;
 	~WorkerFactoryHandleHijacker();
+};
+
+class FileHandleHijacker : public HandleHijacker
+{
+private:
+	std::wstring m_wsTargetFileName;
+public:
+	FileHandleHijacker(std::wstring wsTargetFileName);
+	bool IsDesiredOwnerProcess(DWORD dwOwnerProcessId) override;
+	bool IsDesiredHandle(std::shared_ptr<HANDLE> p_hHijackedObject) override;
+	~FileHandleHijacker();
 };
