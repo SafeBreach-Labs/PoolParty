@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 
+#include "WinApi.hpp"
 #include "Native.hpp"
 #include "Misc.hpp"
 

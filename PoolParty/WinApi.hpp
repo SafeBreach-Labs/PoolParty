@@ -8,6 +8,7 @@
 #include <Windows.h>
 
 #include "Exceptions.hpp"
+#include "HandleDeleter.hpp"
 
 // ------------//
 // Proto types //
