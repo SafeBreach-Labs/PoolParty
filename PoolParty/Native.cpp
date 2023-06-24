@@ -1,6 +1,7 @@
 #include "Native.hpp"
 
 // TODO: RtlNtStatusToDosError may help for NativeWindowsException
+// TODO: Use one template :)
 
 void w_ZwAssociateWaitCompletionPacket(
     HANDLE WaitCopmletionPacketHandle,
@@ -96,43 +97,4 @@ HANDLE w_NtAlpcConnectPort(
     }
 
     return hAlpc;
-}
-
-// TODO: Add template that holds the structure, allocate on the stack and return it
-std::vector<BYTE> w_NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass) 
-{
-    ULONG SystemInformationLength = 0;
-    auto Ntstatus = STATUS_INFO_LENGTH_MISMATCH;
-    std::vector<BYTE> SystemInformation;
-
-    do 
-    {
-        SystemInformation.resize(SystemInformationLength);
-        Ntstatus = NtQuerySystemInformation(SystemInformationClass, SystemInformation.data(), SystemInformationLength, &SystemInformationLength);
-    } while (Ntstatus == STATUS_INFO_LENGTH_MISMATCH);
-
-    if (!NT_SUCCESS(Ntstatus)) 
-    {
-        throw WindowsException("NtQuerySystemInformation");
-    }
-   
-    return SystemInformation;
-}
-
-std::vector<BYTE> w_NtQueryObject(HANDLE hObject, OBJECT_INFORMATION_CLASS ObjectInformationClass)
-{
-    ULONG ObjectInformationLength = 0;
-    auto Ntstatus = STATUS_INFO_LENGTH_MISMATCH;
-    std::vector<BYTE> ObjectInformation;
-
-    do {
-        ObjectInformation.resize(ObjectInformationLength);
-        Ntstatus = NtQueryObject(hObject, ObjectInformationClass, ObjectInformation.data(), ObjectInformationLength, &ObjectInformationLength);
-    } while (Ntstatus == STATUS_INFO_LENGTH_MISMATCH);
-
-    if (!NT_SUCCESS(Ntstatus)) {
-        throw WindowsException("NtQueryObject");
-    }
-
-    return ObjectInformation;
 }

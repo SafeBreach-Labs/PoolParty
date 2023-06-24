@@ -212,6 +212,21 @@ HANDLE w_NtAlpcConnectPort(
     PLARGE_INTEGER Timeout
 );
 
-std::vector<BYTE> w_NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass);
+template <typename QueryFunction, typename... QueryFunctionArguments>
+std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, QueryFunction fQueryFunction, QueryFunctionArguments... QueryFunctionArgs)
+{
+	ULONG InformationLength = 0;
+	auto Ntstatus = STATUS_INFO_LENGTH_MISMATCH;
+	std::vector<BYTE> Information;
 
-std::vector<BYTE> w_NtQueryObject(HANDLE hObject, OBJECT_INFORMATION_CLASS ObjectInformationClass);
+	do {
+		Information.resize(InformationLength);
+		Ntstatus = fQueryFunction(QueryFunctionArgs..., Information.data(), InformationLength, &InformationLength);
+	} while (Ntstatus == STATUS_INFO_LENGTH_MISMATCH);
+
+	if (!NT_SUCCESS(Ntstatus)) {
+		throw WindowsException(r_QueryFunctionName);
+	}
+
+	return Information;
+}

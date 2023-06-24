@@ -1,5 +1,6 @@
 #include "PoolParty.hpp"
 
+
 // TODO: Add loggings and replace printf's
 // TODO: better naming all over
 // TODO: Add support for injection to high privileged process
@@ -37,7 +38,7 @@ void PrintUsage()
 		"EXAMPLES:" << std::endl <<
 		"------" << std::endl << std::endl <<
 		"#1 RemoteWorkItemInsertion against pid <1234> " << std::endl << "\t>>PoolParty.exe 1 1234" << std::endl << std::endl <<
-		"#1 RemoteIoCompletionCallbackInsertion against pid <1234> with debug privieleges" << std::endl << "\t>>PoolParty.exe 1 1234 --debug" << std::endl << std::endl;
+		"#1 RemoteIoCompletionCallbackInsertion against pid <1234> with debug privileges" << std::endl << "\t>>PoolParty.exe 1 1234 --debug" << std::endl << std::endl;
 }
 
 POOL_PARTY_CMD_ARGS ParseArgs(int argc, char** argv) {
@@ -99,11 +100,19 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 
 void InitLogging() 
 {
-	// TODO: Filter the ThreadId field of the logger
-	//boost::log::add_console_log(std::cout, boost::log::keywords::format = "[%TimeStamp%] [%Severity%] %Message%");
+	//logging::add_common_attributes();
 
-	boost::log::core::get()->set_filter(
-		boost::log::trivial::severity >= boost::log::trivial::info
+	//logging::register_simple_filter_factory<logging::trivial::severity_level, char>("Severity");
+	//logging::register_simple_formatter_factory<logging::trivial::severity_level, char>("Severity");
+
+	// TODO: Filter the ThreadId field of the logger
+	//logging::add_console_log(
+	//	std::cout, 
+	//	keywords::format = "[%TimeStamp%] [%Severity%] %Message%"
+	//);
+
+	logging::core::get()->set_filter(
+		logging::trivial::severity >= logging::trivial::info
 	);
 }
 

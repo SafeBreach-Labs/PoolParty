@@ -27,7 +27,7 @@ std::shared_ptr<HANDLE> PoolParty::GetWorkerFactoryHandle() {
 
 WORKER_FACTORY_BASIC_INFORMATION PoolParty::GetWorkerFactoryBasicInformation() {
 	WORKER_FACTORY_BASIC_INFORMATION WorkerFactoryInformation = { 0 };
-	w_NtQueryInformationWorkerFactory(*m_p_hWorkerFactory, (WORKERFACTORYINFOCLASS)WorkerFactoryBasicInformation, &WorkerFactoryInformation, sizeof(WorkerFactoryInformation), NULL);
+	w_NtQueryInformationWorkerFactory(*m_p_hWorkerFactory, WorkerFactoryBasicInformation, &WorkerFactoryInformation, sizeof(WorkerFactoryInformation), NULL);
 	BOOST_LOG_TRIVIAL(info) << "Retrieved target worker factory basic information";
 	return WorkerFactoryInformation;
 }

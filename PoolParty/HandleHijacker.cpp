@@ -6,7 +6,7 @@ HandleHijacker::HandleHijacker(std::wstring wsObjectType) : m_wsObjectType(wsObj
 
 std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
 {
-    auto pSystemInformation = w_NtQuerySystemInformation((SYSTEM_INFORMATION_CLASS)16);
+    auto pSystemInformation = w_QueryInformation<decltype(NtQuerySystemInformation), SYSTEM_INFORMATION_CLASS>("NtQuerySystemInformation", NtQuerySystemInformation, (SYSTEM_INFORMATION_CLASS)16);
     auto pSystemHandleInformation = (PSYSTEM_HANDLE_INFORMATION)pSystemInformation.data();
 
     DWORD dwOwnerProcessId;
@@ -35,8 +35,7 @@ std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
                 FALSE,
                 NULL);
 
-
-            pObjectInformation = w_NtQueryObject(*p_hDuplicatedObject, ObjectTypeInformation);
+            pObjectInformation = w_QueryInformation<decltype(NtQueryObject), HANDLE, OBJECT_INFORMATION_CLASS>("NtQueryObject", NtQueryObject, *p_hDuplicatedObject, ObjectTypeInformation);
             pObjectTypeInformation = (PPUBLIC_OBJECT_TYPE_INFORMATION)pObjectInformation.data();
 
             if (m_wsObjectType != std::wstring(pObjectTypeInformation->TypeName.Buffer)) {

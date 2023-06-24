@@ -1,8 +1,11 @@
 #pragma once
+
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp> 
-#include "boost/format.hpp"
+#include <boost/format.hpp>
+#include <boost/log/utility/setup/console.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
 
 
 #include <Windows.h>
@@ -19,6 +22,10 @@
 #include "ThreadPool.hpp"
 #include "WinApi.hpp"
 #include "HandleHijacker.hpp"
+
+namespace logging = boost::log;
+namespace keywords = boost::log::keywords;
+
 
 // TODO: Change macros to constexpr if possible
 
@@ -46,7 +53,6 @@ protected:
 	SIZE_T m_szShellcodeSize;
 	PVOID m_ShellcodeAddress;
 	WORKER_FACTORY_BASIC_INFORMATION m_WorkerFactoryInformation;
-
 public:
 	PoolParty(DWORD dwTargetPid, unsigned char* cShellcode);
 	std::shared_ptr<HANDLE> GetTargetProcessHandle();
