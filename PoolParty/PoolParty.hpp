@@ -62,14 +62,14 @@ public:
 	void WriteShellcode();
 	virtual void SetupExecution() PURE;
 	void Inject();
-	~PoolParty();
+	virtual ~PoolParty() = default;
 };
 
 class RemoteWorkItemInsertion : public PoolParty {
 public: 
 	RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
 	void SetupExecution() override;
-	~RemoteWorkItemInsertion();
+	~RemoteWorkItemInsertion() override = default;
 };
 
 class WorkerFactoryStartRoutineOverwrite : public PoolParty {
@@ -77,33 +77,33 @@ public:
 	WorkerFactoryStartRoutineOverwrite(DWORD dwTargetPid, unsigned char* cShellcode);
 	void SetupExecution() override;
 	LPVOID AllocateShellcodeMemory() override;
-	~WorkerFactoryStartRoutineOverwrite();
+	~WorkerFactoryStartRoutineOverwrite() override = default;
 };
 
 class RemoteWaitCallbackInsertion : public PoolParty {
 public:
 	RemoteWaitCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
 	void SetupExecution() override;
-	~RemoteWaitCallbackInsertion();
+	~RemoteWaitCallbackInsertion() override = default;
 };
 
 class RemoteIoCompletionCallbackInsertion : public PoolParty {
 public:
 	RemoteIoCompletionCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
 	void SetupExecution() override;
-	~RemoteIoCompletionCallbackInsertion();
+	~RemoteIoCompletionCallbackInsertion() override = default;
 };
 
 class RemoteAlpcCallbackInsertion : public PoolParty {
 public:
 	RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
 	void SetupExecution() override;
-	~RemoteAlpcCallbackInsertion();
+	~RemoteAlpcCallbackInsertion() override = default;
 };
 
 class RemoteJobCallbackInsertion : public PoolParty {
 public:
 	RemoteJobCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
 	void SetupExecution() override;
-	~RemoteJobCallbackInsertion();
+	~RemoteJobCallbackInsertion() override = default;
 };

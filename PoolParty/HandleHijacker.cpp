@@ -72,7 +72,8 @@ HandleHijacker::~HandleHijacker()
 {
 }
 
-WorkerFactoryHandleHijacker::WorkerFactoryHandleHijacker(DWORD dwTargetPid) : HandleHijacker{ std::wstring(L"TpWorkerFactory") }, m_dwTargetPid(dwTargetPid)
+WorkerFactoryHandleHijacker::WorkerFactoryHandleHijacker(DWORD dwTargetPid)
+: HandleHijacker{ std::wstring(L"TpWorkerFactory") }, m_dwTargetPid(dwTargetPid)
 {
 }
 
