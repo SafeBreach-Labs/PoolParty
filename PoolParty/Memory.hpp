@@ -2,9 +2,10 @@
 
 #include <Windows.h>
 
-#include "Exceptions.hpp"
+#include <iostream>
 #include <memory>
 
+#include "Misc.hpp"
 
 // ------------//
 // Proto types //
@@ -22,7 +23,7 @@ template<typename T> std::unique_ptr<T> ReadMemory(HANDLE hTargetPid, LPVOID Bas
 	auto BufferSize = sizeof(T);
 	SIZE_T szNumberOfBytesRead;
 	if (!ReadProcessMemory(hTargetPid, BaseAddress, Buffer.get(), BufferSize, &szNumberOfBytesRead)) {
-		throw WindowsException("ReadProcessMemory");
+		throw std::runtime_error(GetLastErrorString("ReadProcessMemory"));
 	}
 	
 	if (BufferSize != szNumberOfBytesRead) {

@@ -25,7 +25,7 @@ void w_ZwAssociateWaitCompletionPacket(
         AlreadySignaled);
     if (!NT_SUCCESS(Ntstatus)) 
     {
-        throw WindowsException("ZwAssociateWaitCompletionPacket"); // TODO: Convert to NativeWindowsException which will display status string representation
+        throw std::runtime_error(GetLastErrorString("ZwAssociateWaitCompletionPacket")); // TODO: Convert to NativeWindowsException which will display status string representation
     }
 }
 
@@ -40,7 +40,7 @@ void w_ZwSetInformationFile(
     auto Ntstatus = ZwSetInformationFile(hFile, IoStatusBlock, FileInformation, Length, FileInformationClass);
     if (!NT_SUCCESS(Ntstatus))
     {
-        throw WindowsException("ZwSetInformationFile"); // TODO: Convert to NativeWindowsException which will display status string representation
+        throw std::runtime_error(GetLastErrorString("ZwSetInformationFile")); // TODO: Convert to NativeWindowsException which will display status string representation
     }
 }
 
@@ -49,7 +49,7 @@ HANDLE w_NtAlpcCreatePort(POBJECT_ATTRIBUTES ObjectAttributes, PALPC_PORT_ATTRIB
     auto Ntstatus = NtAlpcCreatePort(&hAlpc, ObjectAttributes, PortAttributes);
     if (!NT_SUCCESS(Ntstatus))
     {
-        throw WindowsException("NtAlpcCreatePort"); // TODO: Convert to NativeWindowsException which will display status string representation
+        throw std::runtime_error(GetLastErrorString("NtAlpcCreatePort")); // TODO: Convert to NativeWindowsException which will display status string representation
     }
 
     return hAlpc;
@@ -60,7 +60,7 @@ void w_NtAlpcSetInformation(HANDLE hAlpc, ULONG PortInformationClass, PVOID Port
     auto Ntstatus = NtAlpcSetInformation(hAlpc, PortInformationClass, PortInformation, Length);
     if (!NT_SUCCESS(Ntstatus))
     {
-        throw WindowsException("NtAlpcSetInformation"); // TODO: Convert to NativeWindowsException which will display status string representation
+        throw std::runtime_error(GetLastErrorString("NtAlpcSetInformation")); // TODO: Convert to NativeWindowsException which will display status string representation
     }
 }
 
@@ -93,7 +93,7 @@ HANDLE w_NtAlpcConnectPort(
         Timeout);
     if (!NT_SUCCESS(Ntstatus)) 
     {
-        throw WindowsException("NtAlpcConnectPort"); // TODO: Convert to NativeWindowsException which will display status string representation
+        throw std::runtime_error(GetLastErrorString("NtAlpcConnectPort")); // TODO: Convert to NativeWindowsException which will display status string representation
     }
 
     return hAlpc;

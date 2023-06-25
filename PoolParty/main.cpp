@@ -1,5 +1,5 @@
 #include "PoolParty.hpp"
-
+#include "Misc.hpp"
 
 // TODO: Add loggings and replace printf's
 // TODO: better naming all over
@@ -126,14 +126,9 @@ int main(int argc, char** argv) {
 		auto Injector = PoolPartyFactory(CmdArgs.VariantId, CmdArgs.TargetPid);
 		Injector->Inject();
 	}
-	catch (WindowsException& ex)
-	{
-		std::cerr << "ERROR: " << ex.what() << std::endl;
-		return 0;
-	}
 	catch (const std::exception& ex) 
 	{
-		std::cerr << "ERROR: " << ex.what() << std::endl;
+		BOOST_LOG_TRIVIAL(error) << ex.what();
 		return 0;
 	}
 	

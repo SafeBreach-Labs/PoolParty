@@ -17,7 +17,6 @@
 #include "Misc.hpp"
 #include "Native.hpp"
 #include "WorkerFactory.hpp"
-#include "Exceptions.hpp"
 #include "Memory.hpp"
 #include "ThreadPool.hpp"
 #include "WinApi.hpp"

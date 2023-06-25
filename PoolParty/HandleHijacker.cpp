@@ -49,7 +49,7 @@ std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
 
             return p_hDuplicatedObject;
         }
-        catch (WindowsException)
+        catch (std::runtime_error)
         {
             continue;
         }

@@ -3,5 +3,7 @@
 #include <Windows.h>
 
 #include <iostream>
+#include <sstream>
+#include <string>
 
-void GetError(std::string FailedFunctionName);
+std::string GetLastErrorString(std::string FailedFunctionName);

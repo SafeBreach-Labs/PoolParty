@@ -3,7 +3,7 @@
 std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId) {
 	auto hTargetPid = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
 	if (hTargetPid == NULL || hTargetPid == INVALID_HANDLE_VALUE) {
-		throw WindowsException("OpenProcess");
+		throw std::runtime_error(GetLastErrorString("OpenProcess"));
 	}
 	return std::shared_ptr<HANDLE>(new HANDLE(hTargetPid), HandleDeleter());
 }
@@ -11,7 +11,7 @@ std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle
 std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions) {
 	HANDLE hTargetHandle;
 	if (!DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, &hTargetHandle, dwDesiredAccess, bInheritHandle, dwOptions)) {
-		throw WindowsException("DuplicateHandle");
+		throw std::runtime_error(GetLastErrorString("DuplicateHandle"));
 	}
 	return std::shared_ptr<HANDLE>(new HANDLE(hTargetHandle), HandleDeleter());
 }
@@ -19,7 +19,7 @@ std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hS
 std::shared_ptr<HANDLE> w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitalState, LPWSTR lpName) {
 	auto hEvent = CreateEvent(lpEventAttributes, bManualReset, bInitalState, lpName);
 	if (hEvent == NULL) {
-		throw WindowsException("CreateEvent");
+		throw std::runtime_error(GetLastErrorString("CreateEvent"));
 	}
 	
 	/* Making sure the consumer is aware of existing events */
@@ -41,7 +41,7 @@ std::shared_ptr<HANDLE> w_CreateFile(
 ) {
 	auto hFile = CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 	if (hFile == INVALID_HANDLE_VALUE) {
-		throw WindowsException("CreateFile");
+		throw std::runtime_error(GetLastErrorString("CreateFile"));
 	}
 
 	return std::shared_ptr<HANDLE>(new HANDLE(hFile), HandleDeleter());
@@ -59,7 +59,7 @@ void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, L
 				return;
 			}
 		}
-		throw WindowsException("WriteFile");
+		throw std::runtime_error(GetLastErrorString("WriteFile"));
 	}
 
 }
@@ -68,7 +68,7 @@ std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes,
 {
 	auto hJob = CreateJobObject(lpJobAttributes, lpName);
 	if (hJob == NULL) {
-		throw WindowsException("CreateJobObject");
+		throw std::runtime_error(GetLastErrorString("CreateJobObject"));
 	}
 
 	/* Making sure the consumer is aware of existing job objects */
@@ -82,13 +82,13 @@ std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes,
 void w_SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, LPVOID lpJobObjectInformation, DWORD cbJobObjectInformationLength)
 {
 	if (!SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation, cbJobObjectInformationLength)) {
-		throw WindowsException("SetInformationJobObject");
+		throw std::runtime_error(GetLastErrorString("SetInformationJobObject"));
 	}
 }
 
 void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess)
 {
 	if (!AssignProcessToJobObject(hJob, hProcess)) {
-		throw WindowsException("AssignProcessToJobObject");
+		throw std::runtime_error(GetLastErrorString("AssignProcessToJobObject"));
 	}
 }

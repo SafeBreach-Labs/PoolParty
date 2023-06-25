@@ -11,7 +11,7 @@ void w_NtQueryInformationWorkerFactory(
     auto Ntstatus = NtQueryInformationWorkerFactory(hWorkerFactory, WorkerFactoryInformationClass, WorkerFactoryInformation, WorkerFactoryInformationLength, ReturnLength);
     if (!NT_SUCCESS(Ntstatus))
     {
-        throw WindowsException("NtQueryInformationWorkerFactory"); // TODO: Convert to NativeWindowsException which will display status string representation
+        throw std::runtime_error(GetLastErrorString("NtQueryInformationWorkerFactory")); // TODO: Convert to NativeWindowsException which will display status string representation
     }
 }
 
@@ -25,6 +25,6 @@ void w_NtSetInformationWorkerFactory(
     auto Ntstatus = NtSetInformationWorkerFactory(hWorkerFactory, WorkerFactoryInformationClass, WorkerFactoryInformation, WorkerFactoryInformationLength);
     if (!NT_SUCCESS(Ntstatus))
     {
-        throw WindowsException("NtSetInformationWorkerFactory"); // TODO: Convert to NativeWindowsException which will display status string representation
+        throw std::runtime_error(GetLastErrorString("NtSetInformationWorkerFactory")); // TODO: Convert to NativeWindowsException which will display status string representation
     }
 }

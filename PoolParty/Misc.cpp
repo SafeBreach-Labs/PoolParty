@@ -1,21 +1,24 @@
 #include "Misc.hpp"
 
-//TODO: This needs to be fixed, to have WCHAR and not std::string that is OK with CHAR *
-
-void GetError(std::string FailedFunctionName)
+std::string GetLastErrorString(std::string FailedFunctionName)
 {
-    DWORD dwErrorCode = GetLastError();
-    WCHAR * ErrorText = NULL;
+    LPSTR pErrorText = NULL;
 
-    FormatMessage(
+    FormatMessageA(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL,
-        dwErrorCode,
+        GetLastError(),
         LANG_SYSTEM_DEFAULT,
-        (LPWSTR)&ErrorText,
+        (LPSTR)&pErrorText,
         0,
         NULL);
 
-    std::printf("ERROR: The function %s failed with error code %d - %S", FailedFunctionName.c_str(), dwErrorCode, ErrorText);
-    LocalFree(ErrorText);
+    auto sErrorText = std::string(pErrorText);
+
+    LocalFree(pErrorText);
+    pErrorText = NULL;
+
+    std::ostringstream oss;
+    oss << FailedFunctionName << " failed: " << sErrorText;
+    return oss.str();
 }

@@ -9,7 +9,7 @@
 #include <ntstatus.h>
 #include <winternl.h>
 
-#include "Exceptions.hpp"
+#include "Misc.hpp"
 
 #pragma comment(lib, "ntdll")
 
@@ -225,7 +225,7 @@ std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, Que
 	} while (Ntstatus == STATUS_INFO_LENGTH_MISMATCH);
 
 	if (!NT_SUCCESS(Ntstatus)) {
-		throw WindowsException(r_QueryFunctionName);
+		throw std::runtime_error(GetLastErrorString(r_QueryFunctionName));
 	}
 
 	return Information;
