@@ -225,7 +225,7 @@ std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, Que
 	} while (Ntstatus == STATUS_INFO_LENGTH_MISMATCH);
 
 	if (!NT_SUCCESS(Ntstatus)) {
-		throw std::runtime_error(GetLastErrorString(r_QueryFunctionName));
+		throw std::runtime_error(GetLastErrorString(r_QueryFunctionName, RtlNtStatusToDosError(Ntstatus)));
 	}
 
 	return Information;

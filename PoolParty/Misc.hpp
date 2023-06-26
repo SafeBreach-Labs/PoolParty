@@ -6,4 +6,4 @@
 #include <sstream>
 #include <string>
 
-std::string GetLastErrorString(std::string FailedFunctionName);
+std::string GetLastErrorString(std::string FailedFunctionName, DWORD dwLastError);
