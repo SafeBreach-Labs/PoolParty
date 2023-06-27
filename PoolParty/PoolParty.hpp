@@ -97,3 +97,10 @@ public:
 	void SetupExecution() const override;
 	~RemoteJobCallbackInsertion() override = default;
 };
+
+class RemoteDirectCallbackInsertion : public PoolParty {
+public:
+	RemoteDirectCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
+	void SetupExecution() const override;
+	~RemoteDirectCallbackInsertion() override = default;
+};

@@ -108,3 +108,12 @@ BOOLEAN w_RtlAdjustPrivilege(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThr
     }
     return Enabled;
 }
+
+void w_ZwSetIoCompletion(HANDLE IoCompletionHandle, PVOID KeyContext, PVOID ApcContext, NTSTATUS IoStatus, ULONG_PTR IoStatusInformation)
+{
+    const auto Ntstatus = ZwSetIoCompletion(IoCompletionHandle, KeyContext, ApcContext, IoStatus, IoStatusInformation);
+    if (!NT_SUCCESS(Ntstatus))
+    {
+        throw std::runtime_error(GetLastErrorString("ZwSetIoCompletion", RtlNtStatusToDosError(Ntstatus)));
+    }
+}

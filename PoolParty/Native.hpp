@@ -125,7 +125,7 @@ typedef enum
 
 typedef enum
 {
-	FileReplaceCompletionInformation = 2
+	FileReplaceCompletionInformation = 61
 } FILE_INFOCLASS;
 
 // ------------------------//
@@ -191,6 +191,16 @@ NTSTATUS NTAPI RtlAdjustPrivilege(
 	_Out_ PBOOLEAN Enabled
 );
 
+EXTERN_C
+NTSTATUS NTAPI ZwSetIoCompletion(
+	_In_ HANDLE IoCompletionHandle,
+	_In_opt_ PVOID KeyContext,
+	_In_opt_ PVOID ApcContext,
+	_In_ NTSTATUS IoStatus,
+	_In_ ULONG_PTR IoStatusInformation
+);
+
+
 // ------------//
 // Proto types //
 // ------------//
@@ -232,6 +242,8 @@ HANDLE w_NtAlpcConnectPort(
 );
 
 BOOLEAN w_RtlAdjustPrivilege(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread);
+
+void w_ZwSetIoCompletion(HANDLE IoCompletionHandle, PVOID KeyContext, PVOID ApcContext, NTSTATUS IoStatus, ULONG_PTR IoStatusInformation);
 
 template <typename QueryFunction, typename... QueryFunctionArguments>
 std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, QueryFunction fQueryFunction, QueryFunctionArguments... QueryFunctionArgs)
