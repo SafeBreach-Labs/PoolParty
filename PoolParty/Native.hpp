@@ -117,6 +117,11 @@ typedef struct _ALPC_PORT_ASSOCIATE_COMPLETION_PORT
 // Enumerations //
 // ------------//
 
+typedef enum
+{
+	SeDebugPrivilege = 20
+} Privileges;
+
 // ------------------------//
 // System call definitions //
 // ------------------------//
@@ -172,6 +177,14 @@ NTSTATUS NTAPI NtAlpcConnectPort(
 	_In_opt_ PLARGE_INTEGER Timeout
 );
 
+EXTERN_C
+NTSTATUS NTAPI RtlAdjustPrivilege(
+	_In_ ULONG Privilege,
+	_In_ BOOLEAN Enable,
+	_In_ BOOLEAN CurrentThread,
+	_Out_ PBOOLEAN Enabled
+);
+
 // ------------//
 // Proto types //
 // ------------//
@@ -211,6 +224,8 @@ HANDLE w_NtAlpcConnectPort(
     PALPC_MESSAGE_ATTRIBUTES InMessageAttributes,
     PLARGE_INTEGER Timeout
 );
+
+BOOLEAN w_RtlAdjustPrivilege(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread);
 
 template <typename QueryFunction, typename... QueryFunctionArguments>
 std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, QueryFunction fQueryFunction, QueryFunctionArguments... QueryFunctionArgs)

@@ -97,3 +97,14 @@ HANDLE w_NtAlpcConnectPort(
 
     return hAlpc;
 }
+
+BOOLEAN w_RtlAdjustPrivilege(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread)
+{
+    BOOLEAN Enabled = NULL;
+    auto Ntstatus = RtlAdjustPrivilege(Privilege, Enable, CurrentThread, &Enabled);
+    if (!NT_SUCCESS(Ntstatus))
+    {
+        throw std::runtime_error(GetLastErrorString("RtlAdjustPrivilege", RtlNtStatusToDosError(Ntstatus)));
+    }
+    return Enabled;
+}

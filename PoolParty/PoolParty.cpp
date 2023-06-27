@@ -8,12 +8,8 @@ PoolParty::PoolParty(DWORD dwTargetPid, unsigned char* cShellcode) {
 	m_szShellcodeSize = 224; // TODO: Fix this disgusting issue
 }
 
-// TODO: Replace auto usage if reduces readability
-// TODO: Add RAII wrappers for resource creation functions
-// TODO: Reduce access rights
-// TODO: Should logs be in the inject method?
 std::shared_ptr<HANDLE> PoolParty::GetTargetProcessHandle() {
-	auto p_hTargetPid = w_OpenProcess(PROCESS_ALL_ACCESS, FALSE, m_dwTargetPid);
+	auto p_hTargetPid = w_OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_DUP_HANDLE, FALSE, m_dwTargetPid);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Retrived handle to the target process: %x") % *p_hTargetPid;
 	return p_hTargetPid;
 }

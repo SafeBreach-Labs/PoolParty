@@ -1,7 +1,6 @@
 #include "PoolParty.hpp"
 #include "Misc.hpp"
 
-// TODO: Add loggings and replace printf's
 // TODO: better naming all over
 // TODO: Add support for injection to high privileged process
 
@@ -53,24 +52,23 @@ POOL_PARTY_CMD_ARGS ParseArgs(int argc, char** argv) {
 	{
 		auto CmdArg = args.at(i);
 
-		if(CmdArg == "-V" || CmdArg == "--variant-id")
+		if (CmdArg == "-V" || CmdArg == "--variant-id")
 		{
 			CmdArgs.VariantId = stoi(args.at(++i));
 			continue;
 		}
-		else if (CmdArg == "-P" || CmdArg == "--target-pid") 
+		if (CmdArg == "-P" || CmdArg == "--target-pid") 
 		{
 			CmdArgs.TargetPid = stoi(args.at(++i));
 			continue;
 		}
-		else if (CmdArg == "-D" || CmdArg == "--debug-privilege")
+		if (CmdArg == "-D" || CmdArg == "--debug-privilege")
 		{
 			CmdArgs.bDebugPrivilege = TRUE;
 			continue;
 		}
-		else {
-			throw std::runtime_error("Invalid option");
-		}
+		PrintUsage();
+		throw std::runtime_error((boost::format("Invalid option: %s") % CmdArg).str());
 	}
 
 	return CmdArgs;
@@ -121,9 +119,15 @@ int main(int argc, char** argv) {
 
 	try 
 	{
-		auto CmdArgs = ParseArgs(argc, argv);
+		const auto CmdArgs = ParseArgs(argc, argv);
 
-		auto Injector = PoolPartyFactory(CmdArgs.VariantId, CmdArgs.TargetPid);
+		if (CmdArgs.bDebugPrivilege)
+		{
+			w_RtlAdjustPrivilege(SeDebugPrivilege, TRUE, FALSE);
+			BOOST_LOG_TRIVIAL(info) << "Retrieved SeDebugPrivilege successfully";
+		}
+
+		const auto Injector = PoolPartyFactory(CmdArgs.VariantId, CmdArgs.TargetPid);
 		Injector->Inject();
 	}
 	catch (const std::exception& ex) 

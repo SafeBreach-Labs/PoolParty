@@ -24,9 +24,6 @@
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
-
-// TODO: Change macros to constexpr if possible
-
 #define POOL_PARTY_ALPC_PORT_NAME L"\\RPC Control\\PoolPartyALPCPort"
 #define POOL_PARTY_EVENT_NAME L"PoolPartyEvent"
 #define POOL_PARTY_FILE_NAME L"PoolParty_invitation.txt"
