@@ -13,7 +13,7 @@ void w_ZwAssociateWaitCompletionPacket(
     PBOOLEAN AlreadySignaled
 ) 
 {
-    auto Ntstatus = ZwAssociateWaitCompletionPacket(
+    const auto Ntstatus = ZwAssociateWaitCompletionPacket(
         WaitCopmletionPacketHandle,
         IoCompletionHandle,
         TargetObjectHandle,
@@ -36,7 +36,7 @@ void w_ZwSetInformationFile(
     ULONG FileInformationClass
 )
 {
-    auto Ntstatus = ZwSetInformationFile(hFile, IoStatusBlock, FileInformation, Length, FileInformationClass);
+    const auto Ntstatus = ZwSetInformationFile(hFile, IoStatusBlock, FileInformation, Length, FileInformationClass);
     if (!NT_SUCCESS(Ntstatus))
     {
         throw std::runtime_error(GetLastErrorString("ZwSetInformationFile", RtlNtStatusToDosError(Ntstatus)));
@@ -45,7 +45,7 @@ void w_ZwSetInformationFile(
 
 HANDLE w_NtAlpcCreatePort(POBJECT_ATTRIBUTES ObjectAttributes, PALPC_PORT_ATTRIBUTES PortAttributes) {
     HANDLE hAlpc;
-    auto Ntstatus = NtAlpcCreatePort(&hAlpc, ObjectAttributes, PortAttributes);
+    const auto Ntstatus = NtAlpcCreatePort(&hAlpc, ObjectAttributes, PortAttributes);
     if (!NT_SUCCESS(Ntstatus))
     {
         throw std::runtime_error(GetLastErrorString("NtAlpcCreatePort", RtlNtStatusToDosError(Ntstatus)));
@@ -56,7 +56,7 @@ HANDLE w_NtAlpcCreatePort(POBJECT_ATTRIBUTES ObjectAttributes, PALPC_PORT_ATTRIB
 
 void w_NtAlpcSetInformation(HANDLE hAlpc, ULONG PortInformationClass, PVOID PortInformation, ULONG Length) 
 {
-	auto Ntstatus = NtAlpcSetInformation(hAlpc, PortInformationClass, PortInformation, Length);
+    const auto Ntstatus = NtAlpcSetInformation(hAlpc, PortInformationClass, PortInformation, Length);
     if (!NT_SUCCESS(Ntstatus))
     {
         throw std::runtime_error(GetLastErrorString("NtAlpcSetInformation", RtlNtStatusToDosError(Ntstatus)));
@@ -78,7 +78,7 @@ HANDLE w_NtAlpcConnectPort(
 ) 
 {
     HANDLE hAlpc;
-    auto Ntstatus = NtAlpcConnectPort(
+    const auto Ntstatus = NtAlpcConnectPort(
         &hAlpc,
         PortName, 
         ObjectAttributes,
@@ -101,7 +101,7 @@ HANDLE w_NtAlpcConnectPort(
 BOOLEAN w_RtlAdjustPrivilege(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread)
 {
     BOOLEAN Enabled = NULL;
-    auto Ntstatus = RtlAdjustPrivilege(Privilege, Enable, CurrentThread, &Enabled);
+    const auto Ntstatus = RtlAdjustPrivilege(Privilege, Enable, CurrentThread, &Enabled);
     if (!NT_SUCCESS(Ntstatus))
     {
         throw std::runtime_error(GetLastErrorString("RtlAdjustPrivilege", RtlNtStatusToDosError(Ntstatus)));

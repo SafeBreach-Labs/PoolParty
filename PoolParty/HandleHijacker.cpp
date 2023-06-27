@@ -7,7 +7,7 @@ HandleHijacker::HandleHijacker(std::wstring wsObjectType) : m_wsObjectType(wsObj
 std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
 {
     auto pSystemInformation = w_QueryInformation<decltype(NtQuerySystemInformation), SYSTEM_INFORMATION_CLASS>("NtQuerySystemInformation", NtQuerySystemInformation, (SYSTEM_INFORMATION_CLASS)16);
-    auto pSystemHandleInformation = (PSYSTEM_HANDLE_INFORMATION)pSystemInformation.data();
+    const auto pSystemHandleInformation = reinterpret_cast<PSYSTEM_HANDLE_INFORMATION>(pSystemInformation.data());
 
     DWORD dwOwnerProcessId;
 	std::shared_ptr<HANDLE> p_hDuplicatedObject;
@@ -36,7 +36,7 @@ std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
                 NULL);
 
             pObjectInformation = w_QueryInformation<decltype(NtQueryObject), HANDLE, OBJECT_INFORMATION_CLASS>("NtQueryObject", NtQueryObject, *p_hDuplicatedObject, ObjectTypeInformation);
-            pObjectTypeInformation = (PPUBLIC_OBJECT_TYPE_INFORMATION)pObjectInformation.data();
+            pObjectTypeInformation = reinterpret_cast<PPUBLIC_OBJECT_TYPE_INFORMATION>(pObjectInformation.data());
 
             if (m_wsObjectType != std::wstring(pObjectTypeInformation->TypeName.Buffer)) {
                 continue;
@@ -68,10 +68,6 @@ bool HandleHijacker::IsDesiredHandle(std::shared_ptr<HANDLE> p_hHijackedObject)
 	return true;
 }
 
-HandleHijacker::~HandleHijacker()
-{
-}
-
 WorkerFactoryHandleHijacker::WorkerFactoryHandleHijacker(DWORD dwTargetPid)
 : HandleHijacker{ std::wstring(L"TpWorkerFactory") }, m_dwTargetPid(dwTargetPid)
 {
@@ -84,8 +80,4 @@ bool WorkerFactoryHandleHijacker::IsDesiredOwnerProcess(DWORD dwOwnerProcessId)
         return true;
 	}
     return false;
-}
-
-WorkerFactoryHandleHijacker::~WorkerFactoryHandleHijacker()
-{
 }

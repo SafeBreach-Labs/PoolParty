@@ -1,7 +1,7 @@
 #include "WinApi.hpp"
 
 std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId) {
-	auto hTargetPid = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
+	const auto hTargetPid = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
 	if (hTargetPid == NULL || hTargetPid == INVALID_HANDLE_VALUE) {
 		throw std::runtime_error(GetLastErrorString("OpenProcess", GetLastError()));
 	}
@@ -17,7 +17,7 @@ std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hS
 }
 
 std::shared_ptr<HANDLE> w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitalState, LPWSTR lpName) {
-	auto hEvent = CreateEvent(lpEventAttributes, bManualReset, bInitalState, lpName);
+	const auto hEvent = CreateEvent(lpEventAttributes, bManualReset, bInitalState, lpName);
 	if (hEvent == NULL) {
 		throw std::runtime_error(GetLastErrorString("CreateEvent", GetLastError()));
 	}
@@ -39,7 +39,7 @@ std::shared_ptr<HANDLE> w_CreateFile(
 	DWORD dwFlagsAndAttributes,
 	HANDLE hTemplateFile
 ) {
-	auto hFile = CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+	const auto hFile = CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 	if (hFile == INVALID_HANDLE_VALUE) {
 		throw std::runtime_error(GetLastErrorString("CreateFile", GetLastError()));
 	}
@@ -66,7 +66,7 @@ void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, L
 
 std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes, LPWSTR lpName)
 {
-	auto hJob = CreateJobObject(lpJobAttributes, lpName);
+	const auto hJob = CreateJobObject(lpJobAttributes, lpName);
 	if (hJob == NULL) {
 		throw std::runtime_error(GetLastErrorString("CreateJobObject", GetLastError()));
 	}
@@ -94,7 +94,7 @@ void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess)
 }
 
 LPVOID w_VirtualAllocEx(HANDLE hTargetPid, SIZE_T szSizeOfChunk, DWORD dwAllocationType, DWORD dwProtect) {
-	auto AllocatedMemory = VirtualAllocEx(hTargetPid, NULL, szSizeOfChunk, dwAllocationType, dwProtect);
+	const auto AllocatedMemory = VirtualAllocEx(hTargetPid, nullptr , szSizeOfChunk, dwAllocationType, dwProtect);
 	if (AllocatedMemory == NULL) {
 		throw std::runtime_error(GetLastErrorString("VirtualAllocEx", GetLastError()));
 	}
@@ -102,7 +102,7 @@ LPVOID w_VirtualAllocEx(HANDLE hTargetPid, SIZE_T szSizeOfChunk, DWORD dwAllocat
 }
 
 void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuffer, SIZE_T szSizeOfBuffer) {
-	if (!WriteProcessMemory(hTargetPid, AllocatedMemory, pBuffer, szSizeOfBuffer, NULL)) {
+	if (!WriteProcessMemory(hTargetPid, AllocatedMemory, pBuffer, szSizeOfBuffer, nullptr)) {
 		throw std::runtime_error(GetLastErrorString("WriteProcessMemory", GetLastError()));
 	}
 }

@@ -2,21 +2,21 @@
 
 std::string GetLastErrorString(std::string FailedFunctionName, DWORD dwLastError)
 {
-    LPSTR pErrorText = NULL;
+    LPSTR pErrorText = nullptr;
 
     FormatMessageA(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL,
+        nullptr,
         dwLastError,
         LANG_SYSTEM_DEFAULT,
         (LPSTR)&pErrorText,
         0,
-        NULL);
+        nullptr);
 
-    auto sErrorText = std::string(pErrorText);
+    const auto sErrorText = std::string(pErrorText);
 
     LocalFree(pErrorText);
-    pErrorText = NULL;
+    pErrorText = nullptr;
 
     std::ostringstream oss;
     oss << FailedFunctionName << " failed: " << sErrorText;

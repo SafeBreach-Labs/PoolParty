@@ -8,7 +8,7 @@ void w_NtQueryInformationWorkerFactory(
     PULONG ReturnLength
 ) 
 {
-    auto Ntstatus = NtQueryInformationWorkerFactory(hWorkerFactory, WorkerFactoryInformationClass, WorkerFactoryInformation, WorkerFactoryInformationLength, ReturnLength);
+    const auto Ntstatus = NtQueryInformationWorkerFactory(hWorkerFactory, WorkerFactoryInformationClass, WorkerFactoryInformation, WorkerFactoryInformationLength, ReturnLength);
     if (!NT_SUCCESS(Ntstatus))
     {
         throw std::runtime_error(GetLastErrorString("NtQueryInformationWorkerFactory", RtlNtStatusToDosError(Ntstatus)));
@@ -22,7 +22,7 @@ void w_NtSetInformationWorkerFactory(
     ULONG WorkerFactoryInformationLength
 )
 {
-    auto Ntstatus = NtSetInformationWorkerFactory(hWorkerFactory, WorkerFactoryInformationClass, WorkerFactoryInformation, WorkerFactoryInformationLength);
+    const auto Ntstatus = NtSetInformationWorkerFactory(hWorkerFactory, WorkerFactoryInformationClass, WorkerFactoryInformation, WorkerFactoryInformationLength);
     if (!NT_SUCCESS(Ntstatus))
     {
         throw std::runtime_error(GetLastErrorString("NtSetInformationWorkerFactory", RtlNtStatusToDosError(Ntstatus)));

@@ -5,5 +5,5 @@
 class HandleDeleter
 {
 public:
-	void operator()(HANDLE* handle);
+	void operator()(HANDLE* handle) const;
 };
