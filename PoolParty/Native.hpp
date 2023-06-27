@@ -1,6 +1,3 @@
-
-// TODO: The structs and stuff used in this file should be moved to the place used
-
 #pragma once
 
 #include <vector>
@@ -120,7 +117,17 @@ typedef struct _ALPC_PORT_ASSOCIATE_COMPLETION_PORT
 typedef enum
 {
 	SeDebugPrivilege = 20
-} Privileges;
+} PRIVILEGES;
+
+typedef enum
+{
+	AlpcAssociateCompletionPortInformation = 2
+} ALPC_PORT_INFOCLASS;
+
+typedef enum
+{
+	FileReplaceCompletionInformation = 2
+} FILE_INFOCLASS;
 
 // ------------------------//
 // System call definitions //

@@ -1,29 +1,36 @@
 #include "WinApi.hpp"
 
-std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId) {
+std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
+{
 	const auto hTargetPid = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
-	if (hTargetPid == NULL || hTargetPid == INVALID_HANDLE_VALUE) {
+	if (hTargetPid == NULL || hTargetPid == INVALID_HANDLE_VALUE) 
+	{
 		throw std::runtime_error(GetLastErrorString("OpenProcess", GetLastError()));
 	}
 	return std::shared_ptr<HANDLE>(new HANDLE(hTargetPid), HandleDeleter());
 }
 
-std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions) {
+std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions)
+{
 	HANDLE hTargetHandle;
-	if (!DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, &hTargetHandle, dwDesiredAccess, bInheritHandle, dwOptions)) {
+	if (!DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, &hTargetHandle, dwDesiredAccess, bInheritHandle, dwOptions))
+	{
 		throw std::runtime_error(GetLastErrorString("DuplicateHandle", GetLastError()));
 	}
 	return std::shared_ptr<HANDLE>(new HANDLE(hTargetHandle), HandleDeleter());
 }
 
-std::shared_ptr<HANDLE> w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitalState, LPWSTR lpName) {
+std::shared_ptr<HANDLE> w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitalState, LPWSTR lpName)
+{
 	const auto hEvent = CreateEvent(lpEventAttributes, bManualReset, bInitalState, lpName);
-	if (hEvent == NULL) {
+	if (hEvent == NULL) 
+	{
 		throw std::runtime_error(GetLastErrorString("CreateEvent", GetLastError()));
 	}
 	
 	/* Making sure the consumer is aware of existing events */
-	if (GetLastError() == ERROR_ALREADY_EXISTS) {
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
 		std::printf("WARNING: The event `%S` already exists\n", lpName);
 	}
 
@@ -38,16 +45,19 @@ std::shared_ptr<HANDLE> w_CreateFile(
 	DWORD dwCreationDisposition,
 	DWORD dwFlagsAndAttributes,
 	HANDLE hTemplateFile
-) {
+)
+{
 	const auto hFile = CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-	if (hFile == INVALID_HANDLE_VALUE) {
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
 		throw std::runtime_error(GetLastErrorString("CreateFile", GetLastError()));
 	}
 
 	return std::shared_ptr<HANDLE>(new HANDLE(hFile), HandleDeleter());
 }
 
-void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped) {
+void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped)
+{
 	if (!WriteFile(hFile, lpBuffer, dwNumberOfBytesToWrite, lpNumberOfBytesWritten, lpOverlapped)) 
 	{
 
@@ -67,12 +77,14 @@ void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, L
 std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes, LPWSTR lpName)
 {
 	const auto hJob = CreateJobObject(lpJobAttributes, lpName);
-	if (hJob == NULL) {
+	if (hJob == NULL) 
+	{
 		throw std::runtime_error(GetLastErrorString("CreateJobObject", GetLastError()));
 	}
 
 	/* Making sure the consumer is aware of existing job objects */
-	if (GetLastError() == ERROR_ALREADY_EXISTS) {
+	if (GetLastError() == ERROR_ALREADY_EXISTS) 
+	{
 		std::printf("WARNING: The job `%S` already exists\n", lpName);
 	}
 
@@ -81,29 +93,42 @@ std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes,
 
 void w_SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, LPVOID lpJobObjectInformation, DWORD cbJobObjectInformationLength)
 {
-	if (!SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation, cbJobObjectInformationLength)) {
+	if (!SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation, cbJobObjectInformationLength)) 
+	{
 		throw std::runtime_error(GetLastErrorString("SetInformationJobObject", GetLastError()));
 	}
 }
 
 void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess)
 {
-	if (!AssignProcessToJobObject(hJob, hProcess)) {
+	if (!AssignProcessToJobObject(hJob, hProcess)) 
+	{
 		throw std::runtime_error(GetLastErrorString("AssignProcessToJobObject", GetLastError()));
 	}
 }
 
-LPVOID w_VirtualAllocEx(HANDLE hTargetPid, SIZE_T szSizeOfChunk, DWORD dwAllocationType, DWORD dwProtect) {
+LPVOID w_VirtualAllocEx(HANDLE hTargetPid, SIZE_T szSizeOfChunk, DWORD dwAllocationType, DWORD dwProtect)
+{
 	const auto AllocatedMemory = VirtualAllocEx(hTargetPid, nullptr , szSizeOfChunk, dwAllocationType, dwProtect);
-	if (AllocatedMemory == NULL) {
+	if (AllocatedMemory == NULL) 
+	{
 		throw std::runtime_error(GetLastErrorString("VirtualAllocEx", GetLastError()));
 	}
 	return AllocatedMemory;
 }
 
-void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuffer, SIZE_T szSizeOfBuffer) {
-	if (!WriteProcessMemory(hTargetPid, AllocatedMemory, pBuffer, szSizeOfBuffer, nullptr)) {
+void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuffer, SIZE_T szSizeOfBuffer)
+{
+	if (!WriteProcessMemory(hTargetPid, AllocatedMemory, pBuffer, szSizeOfBuffer, nullptr))
+	{
 		throw std::runtime_error(GetLastErrorString("WriteProcessMemory", GetLastError()));
 	}
 }
 
+void w_SetEvent(HANDLE hEvent)
+{
+	if (!SetEvent(hEvent))
+	{
+		throw std::runtime_error(GetLastErrorString("SetEvent", GetLastError()));
+	}
+}

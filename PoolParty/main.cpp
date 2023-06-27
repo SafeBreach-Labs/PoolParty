@@ -2,7 +2,6 @@
 #include "Misc.hpp"
 
 // TODO: better naming all over
-// TODO: Add support for injection to high privileged process
 
 unsigned char g_Shellcode[] = 
 "\xE8\xBA\x00\x00\x00\x48\x8D\xB8\x9E\x00\x00\x00"

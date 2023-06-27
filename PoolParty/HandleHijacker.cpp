@@ -20,7 +20,7 @@ std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
         try {
             dwOwnerProcessId = pSystemHandleInformation->Handles[i].UniqueProcessId;
 
-            if(!IsDesiredOwnerProcess(dwOwnerProcessId))
+            if (!IsDesiredOwnerProcess(dwOwnerProcessId))
             {
                 continue;
             }
@@ -42,7 +42,7 @@ std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
                 continue;
             }
 
-            if(!IsDesiredHandle(p_hDuplicatedObject))
+            if (!IsDesiredHandle(p_hDuplicatedObject))
             {
                 continue;
             }

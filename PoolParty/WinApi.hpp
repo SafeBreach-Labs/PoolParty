@@ -1,8 +1,3 @@
-/*
-	WinApi wrappers file
-	Contains WinApi functions wrappers that enables clarity for whoever uses it and makes usage much more convinient
-*/
-
 #pragma once
 
 #include <Windows.h>
@@ -41,6 +36,8 @@ void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess);
 LPVOID w_VirtualAllocEx(HANDLE hTargetPid, SIZE_T szSizeOfChunk, DWORD dwAllocationType, DWORD dwProtect);
 
 void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuffer, SIZE_T szSizeOfBuffer);
+
+void w_SetEvent(HANDLE hEvent);
 
 template<typename T>
 std::unique_ptr<T> w_ReadProcessMemory(HANDLE hTargetPid, LPVOID BaseAddress)
