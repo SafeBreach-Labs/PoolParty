@@ -92,3 +92,18 @@ void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess)
 		throw std::runtime_error(GetLastErrorString("AssignProcessToJobObject", GetLastError()));
 	}
 }
+
+LPVOID w_VirtualAllocEx(HANDLE hTargetPid, SIZE_T szSizeOfChunk, DWORD dwAllocationType, DWORD dwProtect) {
+	auto AllocatedMemory = VirtualAllocEx(hTargetPid, NULL, szSizeOfChunk, dwAllocationType, dwProtect);
+	if (AllocatedMemory == NULL) {
+		throw std::runtime_error(GetLastErrorString("VirtualAllocEx", GetLastError()));
+	}
+	return AllocatedMemory;
+}
+
+void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuffer, SIZE_T szSizeOfBuffer) {
+	if (!WriteProcessMemory(hTargetPid, AllocatedMemory, pBuffer, szSizeOfBuffer, NULL)) {
+		throw std::runtime_error(GetLastErrorString("WriteProcessMemory", GetLastError()));
+	}
+}
+

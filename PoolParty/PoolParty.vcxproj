@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClInclude Include="HandleDeleter.hpp" />
     <ClInclude Include="HandleHijacker.hpp" />
-    <ClInclude Include="Memory.hpp" />
     <ClInclude Include="Misc.hpp" />
     <ClInclude Include="Native.hpp" />
     <ClInclude Include="PoolParty.hpp" />
@@ -33,7 +32,6 @@
     <ClCompile Include="HandleDeleter.cpp" />
     <ClCompile Include="HandleHijacker.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="Native.cpp" />
     <ClCompile Include="PoolParty.cpp" />

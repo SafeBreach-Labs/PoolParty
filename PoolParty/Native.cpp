@@ -24,7 +24,7 @@ void w_ZwAssociateWaitCompletionPacket(
         AlreadySignaled);
     if (!NT_SUCCESS(Ntstatus)) 
     {
-        throw std::runtime_error(GetLastErrorString("ZwAssociateWaitCompletionPacket", RtlNtStatusToDosError(Ntstatus)))
+        throw std::runtime_error(GetLastErrorString("ZwAssociateWaitCompletionPacket", RtlNtStatusToDosError(Ntstatus)));
     }
 }
 

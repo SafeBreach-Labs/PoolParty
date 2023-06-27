@@ -38,4 +38,23 @@ void w_SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformat
 
 void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess);
 
-std::wstring w_GetFinalPathNameByHandle(HANDLE hFile, DWORD dwFlags);
+LPVOID w_VirtualAllocEx(HANDLE hTargetPid, SIZE_T szSizeOfChunk, DWORD dwAllocationType, DWORD dwProtect);
+
+void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuffer, SIZE_T szSizeOfBuffer);
+
+template<typename T>
+std::unique_ptr<T> w_ReadProcessMemory(HANDLE hTargetPid, LPVOID BaseAddress)
+{
+	auto Buffer = std::make_unique<T>();
+	auto BufferSize = sizeof(T);
+	SIZE_T szNumberOfBytesRead;
+	if (!ReadProcessMemory(hTargetPid, BaseAddress, Buffer.get(), BufferSize, &szNumberOfBytesRead)) {
+		throw std::runtime_error(GetLastErrorString("ReadProcessMemory", GetLastError()));
+	}
+
+	if (BufferSize != szNumberOfBytesRead) {
+		std::printf("WARNING: Read %d bytes instead of %d bytes\n", szNumberOfBytesRead, BufferSize);
+	}
+
+	return Buffer;
+}

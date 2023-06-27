@@ -6,7 +6,6 @@
 #include "Native.hpp"
 #include "Misc.hpp"
 
-// TODO: Make class impossible to instantiate
 class HandleHijacker {
 private:
 	std::wstring m_wsObjectType;
