@@ -2,8 +2,6 @@
 
 #include <Windows.h>
 
-#include <iostream>
-
 #include "Native.hpp"
 #include "Misc.hpp"
 

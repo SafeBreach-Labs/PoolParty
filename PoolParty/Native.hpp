@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <Windows.h>
-#include <emmintrin.h>
 #include <ntstatus.h>
 #include <winternl.h>
 

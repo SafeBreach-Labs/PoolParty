@@ -7,12 +7,7 @@
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 
-
 #include <Windows.h>
-
-#include <iostream>
-#include <vector>
-#include <string>
 
 #include "Misc.hpp"
 #include "Native.hpp"
