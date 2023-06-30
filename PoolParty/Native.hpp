@@ -263,3 +263,13 @@ std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, Que
 
 	return Information;
 }
+
+template <typename NtApi, typename... NtApiArguments>
+void w_NtApi(const std::string& r_NtApiName, NtApi fNtApi, NtApiArguments... NtApiArgs)
+{
+	const auto Ntstatus = fNtApi(NtApiArgs...);
+	if (!NT_SUCCESS(Ntstatus))
+	{
+		throw std::runtime_error(GetLastErrorString("r_NtApiName", RtlNtStatusToDosError(Ntstatus)));
+	}
+}

@@ -40,6 +40,7 @@ void PrintUsage()
 		"#1 RemoteIoCompletionCallbackInsertion against pid <1234> with debug privileges" << std::endl << "\t>>PoolParty.exe 1 1234 --debug" << std::endl << std::endl;
 }
 
+// TODO: Use boost for command line argument parsing
 POOL_PARTY_CMD_ARGS ParseArgs(int argc, char** argv) {
 	if (argc < 5) {
 		throw std::runtime_error("Too few arguments supplied ");
