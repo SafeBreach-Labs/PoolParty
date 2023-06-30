@@ -7,6 +7,8 @@
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 
+#include <codecvt>
+
 #include <Windows.h>
 
 #include "Misc.hpp"

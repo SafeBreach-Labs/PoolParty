@@ -1,5 +1,4 @@
 #include "PoolParty.hpp"
-#include "Misc.hpp"
 
 // TODO: better naming all over
 
@@ -43,6 +42,7 @@ void PrintUsage()
 // TODO: Use boost for command line argument parsing
 POOL_PARTY_CMD_ARGS ParseArgs(int argc, char** argv) {
 	if (argc < 5) {
+		PrintUsage();
 		throw std::runtime_error("Too few arguments supplied ");
 	}
 
@@ -117,7 +117,8 @@ void InitLogging()
 	);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
 	InitLogging();
 
 	try 
