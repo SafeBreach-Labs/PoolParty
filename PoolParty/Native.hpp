@@ -128,6 +128,11 @@ typedef enum
 	FileReplaceCompletionInformation = 61
 } FILE_INFOCLASS;
 
+typedef enum
+{
+	SystemHandleInformation = 16
+} SYSTEM_INFOCLASS;
+
 // ------------------------//
 // System call definitions //
 // ------------------------//
