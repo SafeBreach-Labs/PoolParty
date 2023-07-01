@@ -46,7 +46,7 @@ protected:
 	PVOID m_ShellcodeAddress;
 	WORKER_FACTORY_BASIC_INFORMATION m_WorkerFactoryInformation;
 public:
-	PoolParty(DWORD dwTargetPid, unsigned char* cShellcode);
+	PoolParty(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	std::shared_ptr<HANDLE> GetTargetProcessHandle() const;
 	std::shared_ptr<HANDLE> GetWorkerFactoryHandle() const;
 	WORKER_FACTORY_BASIC_INFORMATION GetWorkerFactoryBasicInformation() const;
@@ -59,14 +59,14 @@ public:
 
 class RemoteWorkItemInsertion : public PoolParty {
 public: 
-	RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
+	RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
 	~RemoteWorkItemInsertion() override = default;
 };
 
 class WorkerFactoryStartRoutineOverwrite : public PoolParty {
 public:
-	WorkerFactoryStartRoutineOverwrite(DWORD dwTargetPid, unsigned char* cShellcode);
+	WorkerFactoryStartRoutineOverwrite(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	LPVOID AllocateShellcodeMemory() const override;
 	void SetupExecution() const override;
 	~WorkerFactoryStartRoutineOverwrite() override = default;
@@ -74,35 +74,35 @@ public:
 
 class RemoteWaitCallbackInsertion : public PoolParty {
 public:
-	RemoteWaitCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
+	RemoteWaitCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
 	~RemoteWaitCallbackInsertion() override = default;
 };
 
 class RemoteIoCompletionCallbackInsertion : public PoolParty {
 public:
-	RemoteIoCompletionCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
+	RemoteIoCompletionCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
 	~RemoteIoCompletionCallbackInsertion() override = default;
 };
 
 class RemoteAlpcCallbackInsertion : public PoolParty {
 public:
-	RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
+	RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
 	~RemoteAlpcCallbackInsertion() override = default;
 };
 
 class RemoteJobCallbackInsertion : public PoolParty {
 public:
-	RemoteJobCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
+	RemoteJobCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
 	~RemoteJobCallbackInsertion() override = default;
 };
 
 class RemoteDirectCallbackInsertion : public PoolParty {
 public:
-	RemoteDirectCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode);
+	RemoteDirectCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
 	~RemoteDirectCallbackInsertion() override = default;
 };
