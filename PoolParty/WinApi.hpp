@@ -2,7 +2,6 @@
 
 #include <Windows.h>
 
-#include "HandleDeleter.hpp"
 #include "Misc.hpp"
 
 // ------------//

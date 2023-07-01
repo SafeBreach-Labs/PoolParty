@@ -36,9 +36,6 @@
     <ClInclude Include="HandleHijacker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HandleDeleter.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ThreadPool.cpp">
@@ -63,9 +60,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HandleHijacker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HandleDeleter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

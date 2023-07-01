@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HandleDeleter.hpp" />
     <ClInclude Include="HandleHijacker.hpp" />
     <ClInclude Include="Misc.hpp" />
     <ClInclude Include="Native.hpp" />
@@ -29,7 +28,6 @@
     <ClInclude Include="WorkerFactory.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="HandleDeleter.cpp" />
     <ClCompile Include="HandleHijacker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Misc.cpp" />

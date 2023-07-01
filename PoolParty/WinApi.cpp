@@ -7,7 +7,7 @@ std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle
 	{
 		throw std::runtime_error(GetLastErrorString("OpenProcess", GetLastError()));
 	}
-	return std::shared_ptr<HANDLE>(new HANDLE(hTargetPid), HandleDeleter());
+	return std::shared_ptr<HANDLE>(new HANDLE(hTargetPid), [](HANDLE* p_handle) {CloseHandle(*p_handle); });
 }
 
 std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions)
@@ -17,7 +17,7 @@ std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hS
 	{
 		throw std::runtime_error(GetLastErrorString("DuplicateHandle", GetLastError()));
 	}
-	return std::shared_ptr<HANDLE>(new HANDLE(hTargetHandle), HandleDeleter());
+	return std::shared_ptr<HANDLE>(new HANDLE(hTargetHandle), [](HANDLE* p_handle) {CloseHandle(*p_handle); });
 }
 
 std::shared_ptr<HANDLE> w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitalState, LPWSTR lpName)
@@ -34,7 +34,7 @@ std::shared_ptr<HANDLE> w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, B
 		std::printf("WARNING: The event `%S` already exists\n", lpName);
 	}
 
-	return std::shared_ptr<HANDLE>(new HANDLE(hEvent), HandleDeleter());
+	return std::shared_ptr<HANDLE>(new HANDLE(hEvent), [](HANDLE* p_handle){CloseHandle(*p_handle);});
 }
 
 std::shared_ptr<HANDLE> w_CreateFile(
@@ -53,7 +53,7 @@ std::shared_ptr<HANDLE> w_CreateFile(
 		throw std::runtime_error(GetLastErrorString("CreateFile", GetLastError()));
 	}
 
-	return std::shared_ptr<HANDLE>(new HANDLE(hFile), HandleDeleter());
+	return std::shared_ptr<HANDLE>(new HANDLE(hFile), [](HANDLE* p_handle) {CloseHandle(*p_handle); });
 }
 
 void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped)
@@ -88,7 +88,7 @@ std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes,
 		std::printf("WARNING: The job `%S` already exists\n", lpName);
 	}
 
-	return std::shared_ptr<HANDLE>(new HANDLE(hJob), HandleDeleter());
+	return std::shared_ptr<HANDLE>(new HANDLE(hJob), [](HANDLE* p_handle) {CloseHandle(*p_handle); });
 }
 
 void w_SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, LPVOID lpJobObjectInformation, DWORD cbJobObjectInformationLength)
