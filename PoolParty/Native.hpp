@@ -275,6 +275,6 @@ void w_NtApi(const std::string& r_NtApiName, NtApi fNtApi, NtApiArguments... NtA
 	const auto Ntstatus = fNtApi(NtApiArgs...);
 	if (!NT_SUCCESS(Ntstatus))
 	{
-		throw std::runtime_error(GetLastErrorString("r_NtApiName", RtlNtStatusToDosError(Ntstatus)));
+		throw std::runtime_error(GetLastErrorString(r_NtApiName, RtlNtStatusToDosError(Ntstatus)));
 	}
 }

