@@ -62,7 +62,7 @@ WorkerFactoryStartRoutineOverwrite::WorkerFactoryStartRoutineOverwrite(DWORD dwT
 
 LPVOID WorkerFactoryStartRoutineOverwrite::AllocateShellcodeMemory() const
 {
-	BOOST_LOG_TRIVIAL(info) << "Skipping shellcode alloaction, using the target process worker factory start routine";
+	BOOST_LOG_TRIVIAL(info) << "Skipping shellcode allocation, using the target process worker factory start routine";
 	return m_WorkerFactoryInformation.StartRoutine; 
 }
 
