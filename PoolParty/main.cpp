@@ -36,7 +36,7 @@ void PrintUsage()
 		"EXAMPLES:" << std::endl <<
 		"------" << std::endl << std::endl <<
 		"#1 RemoteWorkItemInsertion against pid 1234 " << std::endl << "\t>>PoolParty.exe -V 2 -P 1234" << std::endl << std::endl <<
-		"#1 RemoteIoCompletionCallbackInsertion against pid 1234 with debug privileges" << std::endl << "\t>>PoolParty.exe -V 1 -P 1234 -D" << std::endl << std::endl;
+		"#2 RemoteIoCompletionCallbackInsertion against pid 1234 with debug privileges" << std::endl << "\t>>PoolParty.exe -V 4 -P 1234 -D" << std::endl << std::endl;
 }
 
 // TODO: Use boost for command line argument parsing
@@ -100,17 +100,6 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 
 void InitLogging() 
 {
-	//logging::add_common_attributes();
-
-	//logging::register_simple_filter_factory<logging::trivial::severity_level, char>("Severity");
-	//logging::register_simple_formatter_factory<logging::trivial::severity_level, char>("Severity");
-
-	// TODO: Filter the ThreadId field of the logger
-	//logging::add_console_log(
-	//	std::cout, 
-	//	keywords::format = "[%TimeStamp%] [%Severity%] %Message%"
-	//);
-
 	logging::core::get()->set_filter(
 		logging::trivial::severity >= logging::trivial::info
 	);
