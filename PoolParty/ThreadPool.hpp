@@ -344,7 +344,7 @@ NTSTATUS NTAPI TpAllocAlpcCompletion(
 
 EXTERN_C
 NTSTATUS NTAPI TpAllocJobNotification(
-    _Out_ PFULL_TP_JOB* AlpcReturn,
+    _Out_ PFULL_TP_JOB* JobReturn,
     _In_ HANDLE HJob,
     _In_ PVOID Callback,
     _Inout_opt_ PVOID Context,
