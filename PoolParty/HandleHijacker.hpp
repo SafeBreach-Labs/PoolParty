@@ -25,3 +25,12 @@ public:
 	bool IsDesiredOwnerProcess(DWORD dwOwnerProcessId) override;
 	~WorkerFactoryHandleHijacker() override = default;
 };
+
+class IoCompletionHandleHijacker : public HandleHijacker {
+protected:
+	DWORD m_dwTargetPid;
+public:
+	IoCompletionHandleHijacker(DWORD dwTargetPid);
+	bool IsDesiredOwnerProcess(DWORD dwOwnerProcessId) override;
+	~IoCompletionHandleHijacker() override = default;
+};

@@ -78,3 +78,17 @@ bool WorkerFactoryHandleHijacker::IsDesiredOwnerProcess(DWORD dwOwnerProcessId)
 	}
     return false;
 }
+
+IoCompletionHandleHijacker::IoCompletionHandleHijacker(DWORD dwTargetPid)
+    : HandleHijacker{ std::wstring(L"IoCompletion") }, m_dwTargetPid(dwTargetPid)
+{
+}
+
+bool IoCompletionHandleHijacker::IsDesiredOwnerProcess(DWORD dwOwnerProcessId)
+{
+    if (m_dwTargetPid == dwOwnerProcessId)
+    {
+        return true;
+    }
+    return false;
+}
