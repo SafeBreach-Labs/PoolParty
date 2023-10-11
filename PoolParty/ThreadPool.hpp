@@ -71,6 +71,11 @@ typedef struct _TPP_TIMER_QUEUE
     INT32 __PADDING__[1];
 } TPP_TIMER_QUEUE, * PTPP_TIMER_QUEUE;
 
+typedef struct _TPP_NUMA_NODE
+{
+    INT32 WorkerCount;
+} TPP_NUMA_NODE, * PTPP_NUMA_NODE;
+
 typedef union _TPP_POOL_QUEUE_STATE
 {
     union
