@@ -183,6 +183,18 @@ typedef struct _TPP_BARRIER
     struct _TPP_ITE WaitList;
 } TPP_BARRIER, * PTPP_BARRIER; 
 
+typedef struct _TP_CLEANUP_GROUP
+{
+    struct _TPP_REFCOUNT Refcount;
+    INT32 Released;
+    struct _RTL_SRWLOCK MemberLock;
+    struct _LIST_ENTRY MemberList;
+    struct _TPP_BARRIER Barrier;
+    struct _RTL_SRWLOCK CleanupLock;
+    struct _LIST_ENTRY CleanupList;
+} TP_CLEANUP_GROUP, * PTP_CLEANUP_GROUP;
+
+
 typedef struct _TPP_CLEANUP_GROUP_MEMBER
 {
     struct _TPP_REFCOUNT Refcount;
