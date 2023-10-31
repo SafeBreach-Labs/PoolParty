@@ -94,6 +94,7 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 	case 7:
 		return std::make_unique<RemoteDirectCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	default:
+		PrintUsage();
 		throw std::runtime_error("Invalid variant ID");
 	}
 }
