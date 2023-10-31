@@ -251,7 +251,7 @@ typedef struct _FULL_TP_WORK
     INT32 __PADDING__[1];
 } FULL_TP_WORK, * PFULL_TP_WORK;
 
-typedef struct _TP_TIMER
+typedef struct _FULL_TP_TIMER
 {
     struct _FULL_TP_WORK Work;
     struct _RTL_SRWLOCK Lock;
@@ -276,11 +276,11 @@ typedef struct _TP_TIMER
     };
     UINT8 BlockInsert;
     INT32 __PADDING__[1];
-} TP_TIMER, * PTP_TIMER;
+} FULL_TP_TIMER, * PFULL_TP_TIMER;
 
 typedef struct _FULL_TP_WAIT
 {
-    struct _TP_TIMER Timer;
+    struct _FULL_TP_TIMER Timer;
     void* Handle;
     void* WaitPkt;
     void* NextWaitHandle;
@@ -377,3 +377,4 @@ PFULL_TP_WAIT w_CreateThreadpoolWait(PTP_WAIT_CALLBACK pWaitCallback, PVOID pWai
 PFULL_TP_IO w_CreateThreadpoolIo(HANDLE hFile, PTP_WIN32_IO_CALLBACK pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);
 PFULL_TP_ALPC w_TpAllocAlpcCompletion(HANDLE hAlpc, PTP_ALPC_CALLBACK pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);
 PFULL_TP_JOB w_TpAllocJobNotification(HANDLE hJob, PVOID pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);
+PFULL_TP_TIMER w_CreateThreadpoolTimer(PTP_TIMER_CALLBACK pTimerCallback, PVOID pTimerContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);

@@ -117,3 +117,12 @@ void w_ZwSetIoCompletion(HANDLE IoCompletionHandle, PVOID KeyContext, PVOID ApcC
         throw std::runtime_error(GetLastErrorString("ZwSetIoCompletion", RtlNtStatusToDosError(Ntstatus)));
     }
 }
+
+void w_NtSetTimer2(HANDLE TimerHandle, PLARGE_INTEGER DueTime, PLARGE_INTEGER Period, PT2_SET_PARAMETERS Parameters) 
+{
+    const auto Ntstatus = NtSetTimer2(TimerHandle, DueTime, Period, Parameters);
+    if (!NT_SUCCESS(Ntstatus))
+    {
+        throw std::runtime_error(GetLastErrorString("NtSetTimer2", RtlNtStatusToDosError(Ntstatus)));
+    }
+}

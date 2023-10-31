@@ -109,6 +109,13 @@ typedef struct _ALPC_PORT_ASSOCIATE_COMPLETION_PORT
 	HANDLE CompletionPort;
 } ALPC_PORT_ASSOCIATE_COMPLETION_PORT, * PALPC_PORT_ASSOCIATE_COMPLETION_PORT;
 
+typedef struct _T2_SET_PARAMETERS_V0
+{
+	ULONG Version;
+	ULONG Reserved;
+	LONGLONG NoWakeTolerance;
+} T2_SET_PARAMETERS, * PT2_SET_PARAMETERS;
+
 // -------------//
 // Enumerations //
 // ------------//
@@ -205,6 +212,13 @@ NTSTATUS NTAPI ZwSetIoCompletion(
 	_In_ ULONG_PTR IoStatusInformation
 );
 
+EXTERN_C
+NTSTATUS NTAPI NtSetTimer2(
+	_In_ HANDLE TimerHandle,
+	_In_ PLARGE_INTEGER DueTime,
+	_In_opt_ PLARGE_INTEGER Period,
+	_In_ PT2_SET_PARAMETERS Parameters
+);
 
 // ------------//
 // Proto types //
@@ -249,6 +263,8 @@ HANDLE w_NtAlpcConnectPort(
 BOOLEAN w_RtlAdjustPrivilege(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread);
 
 void w_ZwSetIoCompletion(HANDLE IoCompletionHandle, PVOID KeyContext, PVOID ApcContext, NTSTATUS IoStatus, ULONG_PTR IoStatusInformation);
+
+void w_NtSetTimer2(HANDLE TimerHandle, PLARGE_INTEGER DueTime, PLARGE_INTEGER Period, PT2_SET_PARAMETERS Parameters);
 
 template <typename QueryFunction, typename... QueryFunctionArguments>
 std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, QueryFunction fQueryFunction, QueryFunctionArguments... QueryFunctionArgs)

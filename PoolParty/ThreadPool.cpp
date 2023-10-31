@@ -48,3 +48,12 @@ PFULL_TP_JOB w_TpAllocJobNotification(HANDLE hJob, PVOID pCallback, PVOID pConte
 
 	return TpJob;
 }
+
+PFULL_TP_TIMER w_CreateThreadpoolTimer(PTP_TIMER_CALLBACK pTimerCallback, PVOID pTimerContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
+	const auto pTpTimer = (PFULL_TP_TIMER)CreateThreadpoolTimer(pTimerCallback, pTimerContext, pCallbackEnviron);
+	if (pTpTimer == NULL) {
+		throw std::runtime_error(GetLastErrorString("CreateThreadpoolTimer", GetLastError()));
+	}
+
+	return pTpTimer;
+}

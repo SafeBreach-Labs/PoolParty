@@ -33,6 +33,7 @@ void PrintUsage()
 		"#5: (RemoteAlpcCallbackInsertion) " << std::endl << "\t+ Insert ALPC (TP_ALPC) to the target process's thread pool" << std::endl << std::endl <<
 		"#6: (RemoteJobCallbackInsertion) " << std::endl << "\t+ Insert job (TP_JOB) to the target process's thread pool" << std::endl << std::endl << std::endl <<
 		"#7: (RemoteDirectCallbackInsertion) " << std::endl << "\t+ Insert direct (TP_DIRECT) to the target process's thread pool" << std::endl << std::endl << std::endl <<
+		"#8: (RemoteTimerCallbackInsertion) " << std::endl << "\t+ Insert direct (TP_TIMER) to the target process's thread pool" << std::endl << std::endl << std::endl <<
 		"EXAMPLES:" << std::endl <<
 		"------" << std::endl << std::endl <<
 		"#1 RemoteWorkItemInsertion against pid 1234 " << std::endl << "\t>>PoolParty.exe -V 2 -P 1234" << std::endl << std::endl <<
@@ -93,6 +94,8 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 		return std::make_unique<RemoteJobCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 7:
 		return std::make_unique<RemoteDirectCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
+	case 8:
+		return std::make_unique<RemoteTimerCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	default:
 		PrintUsage();
 		throw std::runtime_error("Invalid variant ID");

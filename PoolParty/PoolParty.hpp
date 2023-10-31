@@ -123,3 +123,10 @@ public:
 	void SetupExecution() const override;
 	~RemoteDirectCallbackInsertion() override = default;
 };
+
+class RemoteTimerCallbackInsertion : public PoolParty {
+public:
+	RemoteTimerCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	void SetupExecution() const override;
+	~RemoteTimerCallbackInsertion() override = default;
+};
