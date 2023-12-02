@@ -1,6 +1,4 @@
-<<<<<<< HEAD
-# PoolParty
-=======
+
 # PoolParty
 A collection of fully-undetectable process injection techniques abusing Windows Thread Pools. Presented at Black Hat EU 2023 Briefings under the title - [**The Pool Party You Will Never Forget: New Process Injection Techniques Using Windows Thread Pools**](https://www.blackhat.com/eu-23/briefings/schedule/#the-pool-party-you-will-never-forget-new-process-injection-techniques-using-windows-thread-pools-35446)
 
@@ -53,4 +51,3 @@ To customize the executable to execute, change the path in the end of the `g_She
 ## Author - Alon Leviev
 * LinkedIn - [Alon Leviev](https://il.linkedin.com/in/alonleviev)
 * Twitter - [@_0xDeku](https://twitter.com/_0xDeku)
->>>>>>> f0bb963 (Update README.md)
