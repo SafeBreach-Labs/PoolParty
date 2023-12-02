@@ -85,58 +85,58 @@ public:
 	~WorkerFactoryStartRoutineOverwrite() override = default;
 };
 
-class RemoteWorkItemInsertion : public PoolParty {
+class RemoteTpWorkInsertion : public PoolParty {
 protected:
 	std::shared_ptr<HANDLE> m_p_hWorkerFactory;
 public:
-	RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	RemoteTpWorkInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void HijackHandles() override;
 	void SetupExecution() const override;
-	~RemoteWorkItemInsertion() override = default;
+	~RemoteTpWorkInsertion() override = default;
 };
 
-class RemoteWaitCallbackInsertion : public AsynchronousWorkItemInsertion {
+class RemoteTpWaitInsertion : public AsynchronousWorkItemInsertion {
 public:
-	RemoteWaitCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	RemoteTpWaitInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
-	~RemoteWaitCallbackInsertion() override = default;
+	~RemoteTpWaitInsertion() override = default;
 };
 
-class RemoteIoCompletionCallbackInsertion : public AsynchronousWorkItemInsertion {
+class RemoteTpIoInsertion : public AsynchronousWorkItemInsertion {
 public:
-	RemoteIoCompletionCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	RemoteTpIoInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
-	~RemoteIoCompletionCallbackInsertion() override = default;
+	~RemoteTpIoInsertion() override = default;
 };
 
-class RemoteAlpcCallbackInsertion : public AsynchronousWorkItemInsertion {
+class RemoteTpAlpcInsertion : public AsynchronousWorkItemInsertion {
 public:
-	RemoteAlpcCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	RemoteTpAlpcInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
-	~RemoteAlpcCallbackInsertion() override = default;
+	~RemoteTpAlpcInsertion() override = default;
 };
 
-class RemoteJobCallbackInsertion : public AsynchronousWorkItemInsertion {
+class RemoteTpJobInsertion : public AsynchronousWorkItemInsertion {
 public:
-	RemoteJobCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	RemoteTpJobInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
-	~RemoteJobCallbackInsertion() override = default;
+	~RemoteTpJobInsertion() override = default;
 };
 
-class RemoteDirectCallbackInsertion : public AsynchronousWorkItemInsertion {
+class RemoteTpDirectInsertion : public AsynchronousWorkItemInsertion {
 public:
-	RemoteDirectCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	RemoteTpDirectInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void SetupExecution() const override;
-	~RemoteDirectCallbackInsertion() override = default;
+	~RemoteTpDirectInsertion() override = default;
 };
 
-class RemoteTimerCallbackInsertion : public PoolParty {
+class RemoteTpTimerInsertion : public PoolParty {
 protected:
 	std::shared_ptr<HANDLE> m_p_hWorkerFactory;
 	std::shared_ptr<HANDLE> m_p_hTimer;
 public:
-	RemoteTimerCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	RemoteTpTimerInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
 	void HijackHandles() override;
 	void SetupExecution() const override;
-	~RemoteTimerCallbackInsertion() override = default;
+	~RemoteTpTimerInsertion() override = default;
 };

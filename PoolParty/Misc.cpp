@@ -10,7 +10,7 @@ std::string w_FormatMessageA(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId,
 		lpSource,
 		dwMessageId,
 		dwLanguageId,
-		(LPSTR)&pErrorText,
+		reinterpret_cast<LPSTR>(&pErrorText),
 		nSize,
 		Arguments);
 	if (szErrorText == 0) 

