@@ -267,19 +267,21 @@ void w_ZwSetIoCompletion(HANDLE IoCompletionHandle, PVOID KeyContext, PVOID ApcC
 
 void w_NtSetTimer2(HANDLE TimerHandle, PLARGE_INTEGER DueTime, PLARGE_INTEGER Period, PT2_SET_PARAMETERS Parameters);
 
-template <typename QueryFunction, typename... QueryFunctionArguments>
-std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, QueryFunction fQueryFunction, QueryFunctionArguments... QueryFunctionArgs)
+template <typename TQueryFunction, typename... TQueryFunctionArgs>
+std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, TQueryFunction QueryFunction, TQueryFunctionArgs... QueryFunctionArgs)
 {
 	ULONG InformationLength = 0;
 	auto Ntstatus = STATUS_INFO_LENGTH_MISMATCH;
 	std::vector<BYTE> Information;
 
-	do {
+	do 
+	{
 		Information.resize(InformationLength);
-		Ntstatus = fQueryFunction(QueryFunctionArgs..., Information.data(), InformationLength, &InformationLength);
+		Ntstatus = QueryFunction(QueryFunctionArgs..., Information.data(), InformationLength, &InformationLength);
 	} while (Ntstatus == STATUS_INFO_LENGTH_MISMATCH);
 
-	if (!NT_SUCCESS(Ntstatus)) {
+	if (!NT_SUCCESS(Ntstatus)) 
+	{
 		throw std::runtime_error(GetLastErrorString(r_QueryFunctionName, RtlNtStatusToDosError(Ntstatus)));
 	}
 

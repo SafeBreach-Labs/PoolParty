@@ -38,11 +38,11 @@ void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuf
 
 void w_SetEvent(HANDLE hEvent);
 
-template<typename T>
-std::unique_ptr<T> w_ReadProcessMemory(HANDLE hTargetPid, LPVOID BaseAddress)
+template<typename TStruct>
+std::unique_ptr<TStruct> w_ReadProcessMemory(HANDLE hTargetPid, LPVOID BaseAddress)
 {
-	auto Buffer = std::make_unique<T>();
-	auto BufferSize = sizeof(T);
+	auto Buffer = std::make_unique<TStruct>();
+	auto BufferSize = sizeof(TStruct);
 	SIZE_T szNumberOfBytesRead;
 	if (!ReadProcessMemory(hTargetPid, BaseAddress, Buffer.get(), BufferSize, &szNumberOfBytesRead)) {
 		throw std::runtime_error(GetLastErrorString("ReadProcessMemory", GetLastError()));

@@ -101,9 +101,18 @@ std::unique_ptr<PoolParty> PoolPartyFactory(int VariantId, int TargetPid)
 	}
 }
 
-// TODO: Remove time and thread ID from logging output
 void InitLogging() 
 {
+	logging::add_console_log(
+		std::cout,
+		keywords::format =
+		(
+			logging::expressions::stream
+			<< "[" << logging::expressions::attr<logging::trivial::severity_level>("Severity")
+			<< "]    " << logging::expressions::smessage
+		)
+	);
+
 	logging::core::get()->set_filter(logging::trivial::severity >= logging::trivial::info);
 }
 
