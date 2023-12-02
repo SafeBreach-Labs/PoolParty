@@ -1,7 +1,5 @@
 #include "Native.hpp"
 
-// TODO: Use one template :)
-
 void w_ZwAssociateWaitCompletionPacket(
     HANDLE WaitCopmletionPacketHandle,
     HANDLE IoCompletionHandle,

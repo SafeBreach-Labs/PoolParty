@@ -67,7 +67,7 @@ typedef struct _WORKER_FACTORY_BASIC_INFORMATION
 // Enumerations //
 // ------------//
 
-typedef enum _WORKERFACTORYINFOCLASS
+typedef enum _SET_WORKERFACTORYINFOCLASS
 {
     WorkerFactoryTimeout = 0,
     WorkerFactoryRetryTimeout = 1,
@@ -76,7 +76,6 @@ typedef enum _WORKERFACTORYINFOCLASS
     WorkerFactoryThreadMinimum = 4,
     WorkerFactoryThreadMaximum = 5,
     WorkerFactoryPaused = 6,
-    WorkerFactoryBasicInformation = 7,
     WorkerFactoryAdjustThreadGoal = 8,
     WorkerFactoryCallbackType = 9,
     WorkerFactoryStackInformation = 10,
@@ -85,7 +84,12 @@ typedef enum _WORKERFACTORYINFOCLASS
     WorkerFactoryFlags = 13,
     WorkerFactoryThreadSoftMaximum = 14,
     WorkerFactoryMaxInfoClass = 15 /* Not implemented */
-} WORKERFACTORYINFOCLASS, * PWORKERFACTORYINFOCLASS;
+} SET_WORKERFACTORYINFOCLASS, * PSET_WORKERFACTORYINFOCLASS;
+
+typedef enum _QUERY_WORKERFACTORYINFOCLASS
+{
+    WorkerFactoryBasicInformation = 7,
+} QUERY_WORKERFACTORYINFOCLASS, * PQUERY_WORKERFACTORYINFOCLASS;
 
 // ------------------------//
 // System call definitions //
@@ -94,7 +98,7 @@ typedef enum _WORKERFACTORYINFOCLASS
 EXTERN_C
 NTSTATUS NTAPI NtQueryInformationWorkerFactory(
     _In_ HANDLE WorkerFactoryHandle,
-    _In_ WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
+    _In_ QUERY_WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
     _In_reads_bytes_(WorkerFactoryInformationLength) PVOID WorkerFactoryInformation,
     _In_ ULONG WorkerFactoryInformationLength,
     _Out_opt_ PULONG ReturnLength
@@ -103,19 +107,23 @@ NTSTATUS NTAPI NtQueryInformationWorkerFactory(
 EXTERN_C
 NTSTATUS NTAPI NtSetInformationWorkerFactory(
     _In_ HANDLE WorkerFactoryHandle,
-    _In_ WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
+    _In_ SET_WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
     _In_reads_bytes_(WorkerFactoryInformationLength) PVOID WorkerFactoryInformation,
     _In_ ULONG WorkerFactoryInformationLength
+);
+
+EXTERN_C
+NTSTATUS NTAPI NtReleaseWorkerFactoryWorker(
+    _In_ HANDLE WorkerFactoryHandle
 );
 
 // ------------//
 // Proto types //
 // ------------//
 
-// TODO: Return the actual buffer for better usage and readability
 void w_NtQueryInformationWorkerFactory(
     HANDLE hWorkerFactory, 
-    WORKERFACTORYINFOCLASS WorkerFactoryInformationClass, 
+    QUERY_WORKERFACTORYINFOCLASS WorkerFactoryInformationClass, 
     PVOID WorkerFactoryInformation,
     ULONG WorkerFactoryInformationLength,
     PULONG ReturnLength
@@ -123,7 +131,11 @@ void w_NtQueryInformationWorkerFactory(
 
 void w_NtSetInformationWorkerFactory(
     HANDLE hWorkerFactory,
-    WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
+    SET_WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
     PVOID WorkerFactoryInformation,
     ULONG WorkerFactoryInformationLength
+);
+
+void w_NtReleaseWorkerFactoryWorker(
+    HANDLE hWorkerFactory
 );

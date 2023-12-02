@@ -2,7 +2,7 @@
 
 void w_NtQueryInformationWorkerFactory(
     HANDLE hWorkerFactory,
-    WORKERFACTORYINFOCLASS WorkerFactoryInformationClass, 
+    QUERY_WORKERFACTORYINFOCLASS WorkerFactoryInformationClass, 
     PVOID WorkerFactoryInformation, 
     ULONG WorkerFactoryInformationLength, 
     PULONG ReturnLength
@@ -17,7 +17,7 @@ void w_NtQueryInformationWorkerFactory(
 
 void w_NtSetInformationWorkerFactory(
     HANDLE hWorkerFactory,
-    WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
+    SET_WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
     PVOID WorkerFactoryInformation,
     ULONG WorkerFactoryInformationLength
 )
@@ -26,5 +26,16 @@ void w_NtSetInformationWorkerFactory(
     if (!NT_SUCCESS(Ntstatus))
     {
         throw std::runtime_error(GetLastErrorString("NtSetInformationWorkerFactory", RtlNtStatusToDosError(Ntstatus)));
+    }
+}
+
+void w_NtReleaseWorkerFactoryWorker(
+    HANDLE hWorkerFactory
+) 
+{
+    const auto Ntstatus = NtReleaseWorkerFactoryWorker(hWorkerFactory);
+    if (!NT_SUCCESS(Ntstatus))
+    {
+        throw std::runtime_error(GetLastErrorString("NtReleaseWorkerFactoryWorker", RtlNtStatusToDosError(Ntstatus)));
     }
 }

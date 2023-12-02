@@ -4,33 +4,10 @@
 
 #include "WinApi.hpp"
 #include "Native.hpp"
+#include "WorkerFactory.hpp"
 #include "Misc.hpp"
 
-class HandleHijacker {
-protected:
-	std::wstring m_wsObjectType;
-public:
-	HandleHijacker(std::wstring wsObjectType);
-	std::shared_ptr<HANDLE> Hijack(DWORD dwDesiredAccess);
-	virtual bool IsDesiredOwnerProcess(DWORD dwOwnerProcessId);
-	virtual bool IsDesiredHandle(std::shared_ptr<HANDLE> p_hHijackedObject);
-	virtual ~HandleHijacker() = default;
-};
-
-class WorkerFactoryHandleHijacker : public HandleHijacker {
-protected:
-	DWORD m_dwTargetPid;
-public:
-	WorkerFactoryHandleHijacker(DWORD dwTargetPid);
-	bool IsDesiredOwnerProcess(DWORD dwOwnerProcessId) override;
-	~WorkerFactoryHandleHijacker() override = default;
-};
-
-class IoCompletionHandleHijacker : public HandleHijacker {
-protected:
-	DWORD m_dwTargetPid;
-public:
-	IoCompletionHandleHijacker(DWORD dwTargetPid);
-	bool IsDesiredOwnerProcess(DWORD dwOwnerProcessId) override;
-	~IoCompletionHandleHijacker() override = default;
-};
+std::shared_ptr<HANDLE> HijackProcessHandle(std::wstring wsObjectType, std::shared_ptr<HANDLE> p_hTarget, DWORD dwDesiredAccess);
+std::shared_ptr<HANDLE> HijackWorkerFactoryProcessHandle(std::shared_ptr<HANDLE> p_hTarget);
+std::shared_ptr<HANDLE> HijackIoCompletionProcessHandle(std::shared_ptr<HANDLE> p_hTarget);
+std::shared_ptr<HANDLE> HijackIRTimerProcessHandle(std::shared_ptr<HANDLE> p_hTarget);

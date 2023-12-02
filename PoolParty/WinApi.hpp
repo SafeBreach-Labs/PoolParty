@@ -54,14 +54,3 @@ std::unique_ptr<T> w_ReadProcessMemory(HANDLE hTargetPid, LPVOID BaseAddress)
 
 	return Buffer;
 }
-
-// TODO: Refactor to use this wrapper
-// TODO: Add more templates for different winapi wrappers
-template <typename WinApi, typename... WinApiArguments>
-void w_WinApi(const std::string& r_WinApiName, WinApi fWinApi, WinApiArguments... WinApiArgs)
-{
-	if(!fWinApi(WinApiArgs...))
-	{
-		throw std::runtime_error(GetLastErrorString(r_WinApiName, GetLastError()));
-	}
-}
