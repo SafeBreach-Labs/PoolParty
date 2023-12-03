@@ -1,20 +1,20 @@
 #include "ThreadPool.hpp"
 
 PFULL_TP_WORK w_CreateThreadpoolWork(PTP_WORK_CALLBACK pWorkCallback, PVOID pWorkContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
-	const auto pWorkItem = (PFULL_TP_WORK)CreateThreadpoolWork(pWorkCallback, pWorkContext, pCallbackEnviron);
-	if (pWorkItem == NULL) {
+	const auto pTpWork = (PFULL_TP_WORK)CreateThreadpoolWork(pWorkCallback, pWorkContext, pCallbackEnviron);
+	if (pTpWork == NULL) {
 		throw std::runtime_error(GetLastErrorString("CreateThreadpoolWork", GetLastError()));
 	}
 
-	return pWorkItem;
+	return pTpWork;
 }
 
 PFULL_TP_WAIT w_CreateThreadpoolWait(PTP_WAIT_CALLBACK pWaitCallback, PVOID pWaitContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
-	const auto pWait = (PFULL_TP_WAIT)CreateThreadpoolWait(pWaitCallback, pWaitCallback, pCallbackEnviron);
-	if (pWait == NULL) {
+	const auto pTpWait = (PFULL_TP_WAIT)CreateThreadpoolWait(pWaitCallback, pWaitCallback, pCallbackEnviron);
+	if (pTpWait == NULL) {
 		throw std::runtime_error(GetLastErrorString("CreateThreadpoolWait", GetLastError()));
 	}
-	return pWait;
+	return pTpWait;
 }
 
 PFULL_TP_IO w_CreateThreadpoolIo(HANDLE hFile, PTP_WIN32_IO_CALLBACK pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
@@ -39,14 +39,14 @@ PFULL_TP_ALPC w_TpAllocAlpcCompletion(HANDLE hAlpc, PTP_ALPC_CALLBACK pCallback,
 
 PFULL_TP_JOB w_TpAllocJobNotification(HANDLE hJob, PVOID pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron)
 {
-	PFULL_TP_JOB TpJob = { 0 };
-	const auto Ntstatus = TpAllocJobNotification(&TpJob, hJob, pCallback, pContext, pCallbackEnviron);
+	PFULL_TP_JOB pTpJob = { 0 };
+	const auto Ntstatus = TpAllocJobNotification(&pTpJob, hJob, pCallback, pContext, pCallbackEnviron);
 	if (!NT_SUCCESS(Ntstatus))
 	{
 		throw std::runtime_error(GetLastErrorString("TpAllocJobNotification", RtlNtStatusToDosError(Ntstatus)));
 	}
 
-	return TpJob;
+	return pTpJob;
 }
 
 PFULL_TP_TIMER w_CreateThreadpoolTimer(PTP_TIMER_CALLBACK pTimerCallback, PVOID pTimerContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
