@@ -2,11 +2,14 @@
 
 std::shared_ptr<HANDLE> w_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
 {
-	const auto hTargetPid = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
-	if (hTargetPid == NULL || hTargetPid == INVALID_HANDLE_VALUE) 
-	{
-		throw std::runtime_error(GetLastErrorString("OpenProcess", GetLastError()));
-	}
+	const auto hTargetPid = RAISE_IF_HANDLE_INVALID(
+		"OpenProcess", 
+		OpenProcess(
+			dwDesiredAccess, 
+			bInheritHandle, 
+			dwProcessId)
+	);
+
 	return std::shared_ptr<HANDLE>(new HANDLE(hTargetPid), [](HANDLE* p_handle) {CloseHandle(*p_handle); });
 }
 
@@ -19,22 +22,32 @@ std::shared_ptr<HANDLE> w_DuplicateHandle(
 	DWORD dwOptions)
 {
 	HANDLE hTargetHandle;
-	if (!DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, &hTargetHandle, dwDesiredAccess, bInheritHandle, dwOptions))
-	{
-		throw std::runtime_error(GetLastErrorString("DuplicateHandle", GetLastError()));
-	}
+	RAISE_IF_FALSE(
+		"DuplicateHandle",
+		DuplicateHandle(
+			hSourceProcessHandle,
+			hSourceHandle,
+			hTargetProcessHandle,
+			&hTargetHandle,
+			dwDesiredAccess,
+			bInheritHandle,
+			dwOptions)
+	);
+
 	return std::shared_ptr<HANDLE>(new HANDLE(hTargetHandle), [](HANDLE* p_handle) {CloseHandle(*p_handle); });
 }
 
 std::shared_ptr<HANDLE> w_CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitalState, LPWSTR lpName)
 {
-	const auto hEvent = CreateEvent(lpEventAttributes, bManualReset, bInitalState, lpName);
-	if (hEvent == NULL) 
-	{
-		throw std::runtime_error(GetLastErrorString("CreateEvent", GetLastError()));
-	}
+	const auto hEvent = RAISE_IF_HANDLE_INVALID(
+		"CreateEvent",
+		CreateEvent(
+			lpEventAttributes,
+			bManualReset,
+			bInitalState,
+			lpName)
+	);
 	
-	/* Making sure the consumer is aware of existing events */
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		std::printf("WARNING: The event `%S` already exists\n", lpName);
@@ -53,11 +66,17 @@ std::shared_ptr<HANDLE> w_CreateFile(
 	HANDLE hTemplateFile
 )
 {
-	const auto hFile = CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-	if (hFile == INVALID_HANDLE_VALUE)
-	{
-		throw std::runtime_error(GetLastErrorString("CreateFile", GetLastError()));
-	}
+	const auto hFile = RAISE_IF_HANDLE_INVALID(
+		"CreateFile",
+		CreateFile(
+			lpFileName, 
+			dwDesiredAccess, 
+			dwShareMode, 
+			lpSecurityAttributes, 
+			dwCreationDisposition, 
+			dwFlagsAndAttributes, 
+			hTemplateFile)
+	);
 
 	return std::shared_ptr<HANDLE>(new HANDLE(hFile), [](HANDLE* p_handle) {CloseHandle(*p_handle); });
 }
@@ -67,7 +86,7 @@ void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, L
 	if (!WriteFile(hFile, lpBuffer, dwNumberOfBytesToWrite, lpNumberOfBytesWritten, lpOverlapped)) 
 	{
 
-		/* Making sure to handle file flag overlapped */
+		/* file flag overlapped wont return true, yet the operation wont fail */
 		if (lpOverlapped)
 		{
 			if (GetLastError() == ERROR_IO_PENDING) 
@@ -82,13 +101,12 @@ void w_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, L
 
 std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes, LPWSTR lpName)
 {
-	const auto hJob = CreateJobObject(lpJobAttributes, lpName);
-	if (hJob == NULL) 
-	{
-		throw std::runtime_error(GetLastErrorString("CreateJobObject", GetLastError()));
-	}
+	const auto hJob = RAISE_IF_HANDLE_INVALID("CreateJobObject",
+		CreateJobObject(
+			lpJobAttributes,
+			lpName)
+	);
 
-	/* Making sure the consumer is aware of existing job objects */
 	if (GetLastError() == ERROR_ALREADY_EXISTS) 
 	{
 		std::printf("WARNING: The job `%S` already exists\n", lpName);
@@ -99,20 +117,28 @@ std::shared_ptr<HANDLE> w_CreateJobObject(LPSECURITY_ATTRIBUTES lpJobAttributes,
 
 void w_SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, LPVOID lpJobObjectInformation, DWORD cbJobObjectInformationLength)
 {
-	if (!SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation, cbJobObjectInformationLength)) 
-	{
-		throw std::runtime_error(GetLastErrorString("SetInformationJobObject", GetLastError()));
-	}
+	RAISE_IF_FALSE(
+		"SetInformationJobObject",
+		SetInformationJobObject(
+			hJob, 
+			JobObjectInformationClass, 
+			lpJobObjectInformation, 
+			cbJobObjectInformationLength)
+	);
+
 }
 
 void w_AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess)
 {
-	if (!AssignProcessToJobObject(hJob, hProcess)) 
-	{
-		throw std::runtime_error(GetLastErrorString("AssignProcessToJobObject", GetLastError()));
-	}
+	RAISE_IF_FALSE(
+		"AssignProcessToJobObject",
+		AssignProcessToJobObject(
+			hJob, 
+			hProcess)
+	);
 }
 
+// TODO: Figure out including this in the error handlers
 LPVOID w_VirtualAllocEx(HANDLE hTargetPid, SIZE_T szSizeOfChunk, DWORD dwAllocationType, DWORD dwProtect)
 {
 	const auto AllocatedMemory = VirtualAllocEx(hTargetPid, nullptr , szSizeOfChunk, dwAllocationType, dwProtect);
@@ -123,18 +149,26 @@ LPVOID w_VirtualAllocEx(HANDLE hTargetPid, SIZE_T szSizeOfChunk, DWORD dwAllocat
 	return AllocatedMemory;
 }
 
+// TODO: Add check for lpNumberOfBytesWritten
 void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuffer, SIZE_T szSizeOfBuffer)
 {
-	if (!WriteProcessMemory(hTargetPid, AllocatedMemory, pBuffer, szSizeOfBuffer, nullptr))
-	{
-		throw std::runtime_error(GetLastErrorString("WriteProcessMemory", GetLastError()));
-	}
+	RAISE_IF_FALSE(
+		"WriteProcessMemory", 
+		WriteProcessMemory(
+			hTargetPid, 
+			AllocatedMemory, 
+			pBuffer, 
+			szSizeOfBuffer, 
+			nullptr)
+	);
 }
 
 void w_SetEvent(HANDLE hEvent)
 {
-	if (!SetEvent(hEvent))
-	{
-		throw std::runtime_error(GetLastErrorString("SetEvent", GetLastError()));
-	}
+	RAISE_IF_FALSE(
+		"SetEvent",
+		SetEvent(
+			hEvent
+		)
+	);
 }

@@ -267,8 +267,24 @@ void w_ZwSetIoCompletion(HANDLE IoCompletionHandle, PVOID KeyContext, PVOID ApcC
 
 void w_NtSetTimer2(HANDLE TimerHandle, PLARGE_INTEGER DueTime, PLARGE_INTEGER Period, PT2_SET_PARAMETERS Parameters);
 
+// ----------------------//
+// Inline error handlers //
+// ----------------------//
+
+inline void NT_SUCCESS_OR_RAISE(std::string FunctionName, NTSTATUS Ntstatus)
+{
+	if (!NT_SUCCESS(Ntstatus))
+	{
+		throw std::runtime_error(GetLastErrorString(FunctionName, RtlNtStatusToDosError(Ntstatus)));
+	}
+}
+
+// ----------//
+// Templates //
+// ----------//
+
 template <typename TQueryFunction, typename... TQueryFunctionArgs>
-std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, TQueryFunction QueryFunction, TQueryFunctionArgs... QueryFunctionArgs)
+std::vector<BYTE> w_QueryInformation(const std::string QueryFunctionName, TQueryFunction QueryFunction, TQueryFunctionArgs... QueryFunctionArgs)
 {
 	ULONG InformationLength = 0;
 	auto Ntstatus = STATUS_INFO_LENGTH_MISMATCH;
@@ -278,11 +294,11 @@ std::vector<BYTE> w_QueryInformation(const std::string& r_QueryFunctionName, TQu
 	{
 		Information.resize(InformationLength);
 		Ntstatus = QueryFunction(QueryFunctionArgs..., Information.data(), InformationLength, &InformationLength);
-	} while (Ntstatus == STATUS_INFO_LENGTH_MISMATCH);
+	} while (STATUS_INFO_LENGTH_MISMATCH == Ntstatus);
 
 	if (!NT_SUCCESS(Ntstatus)) 
 	{
-		throw std::runtime_error(GetLastErrorString(r_QueryFunctionName, RtlNtStatusToDosError(Ntstatus)));
+		throw std::runtime_error(GetLastErrorString(QueryFunctionName, RtlNtStatusToDosError(Ntstatus)));
 	}
 
 	return Information;

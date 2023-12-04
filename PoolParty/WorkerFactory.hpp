@@ -26,14 +26,6 @@
 // Structures //
 // ----------//
 
-typedef struct _WORKER_FACTORY_DEFERRED_WORK
-{
-    PORT_MESSAGE AlpcSendMessage;
-    PVOID AlpcSendMessagePort;
-    ULONG AlpcSendMessageFlags;
-    ULONG Flags;
-} WORKER_FACTORY_DEFERRED_WORK, * PWORKER_FACTORY_DEFERRED_WORK;
-
 typedef struct _WORKER_FACTORY_BASIC_INFORMATION
 {
     LARGE_INTEGER Timeout;
@@ -112,11 +104,6 @@ NTSTATUS NTAPI NtSetInformationWorkerFactory(
     _In_ ULONG WorkerFactoryInformationLength
 );
 
-EXTERN_C
-NTSTATUS NTAPI NtReleaseWorkerFactoryWorker(
-    _In_ HANDLE WorkerFactoryHandle
-);
-
 // ------------//
 // Proto types //
 // ------------//
@@ -134,8 +121,4 @@ void w_NtSetInformationWorkerFactory(
     SET_WORKERFACTORYINFOCLASS WorkerFactoryInformationClass,
     PVOID WorkerFactoryInformation,
     ULONG WorkerFactoryInformationLength
-);
-
-void w_NtReleaseWorkerFactoryWorker(
-    HANDLE hWorkerFactory
 );

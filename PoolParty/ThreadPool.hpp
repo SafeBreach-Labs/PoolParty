@@ -373,8 +373,13 @@ NTSTATUS NTAPI TpAllocJobNotification(
 // ------------//
 
 PFULL_TP_WORK w_CreateThreadpoolWork(PTP_WORK_CALLBACK pWorkCallback, PVOID pWorkContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);
+
 PFULL_TP_WAIT w_CreateThreadpoolWait(PTP_WAIT_CALLBACK pWaitCallback, PVOID pWaitContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);
+
 PFULL_TP_IO w_CreateThreadpoolIo(HANDLE hFile, PTP_WIN32_IO_CALLBACK pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);
+
 PFULL_TP_ALPC w_TpAllocAlpcCompletion(HANDLE hAlpc, PTP_ALPC_CALLBACK pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);
+
 PFULL_TP_JOB w_TpAllocJobNotification(HANDLE hJob, PVOID pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);
+
 PFULL_TP_TIMER w_CreateThreadpoolTimer(PTP_TIMER_CALLBACK pTimerCallback, PVOID pTimerContext, PTP_CALLBACK_ENVIRON pCallbackEnviron);

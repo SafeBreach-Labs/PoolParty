@@ -2,7 +2,7 @@
 
 PFULL_TP_WORK w_CreateThreadpoolWork(PTP_WORK_CALLBACK pWorkCallback, PVOID pWorkContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
 	const auto pTpWork = (PFULL_TP_WORK)CreateThreadpoolWork(pWorkCallback, pWorkContext, pCallbackEnviron);
-	if (pTpWork == NULL) {
+	if (NULL == pTpWork) {
 		throw std::runtime_error(GetLastErrorString("CreateThreadpoolWork", GetLastError()));
 	}
 
@@ -11,7 +11,7 @@ PFULL_TP_WORK w_CreateThreadpoolWork(PTP_WORK_CALLBACK pWorkCallback, PVOID pWor
 
 PFULL_TP_WAIT w_CreateThreadpoolWait(PTP_WAIT_CALLBACK pWaitCallback, PVOID pWaitContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
 	const auto pTpWait = (PFULL_TP_WAIT)CreateThreadpoolWait(pWaitCallback, pWaitCallback, pCallbackEnviron);
-	if (pTpWait == NULL) {
+	if (NULL == pTpWait) {
 		throw std::runtime_error(GetLastErrorString("CreateThreadpoolWait", GetLastError()));
 	}
 	return pTpWait;
@@ -19,7 +19,7 @@ PFULL_TP_WAIT w_CreateThreadpoolWait(PTP_WAIT_CALLBACK pWaitCallback, PVOID pWai
 
 PFULL_TP_IO w_CreateThreadpoolIo(HANDLE hFile, PTP_WIN32_IO_CALLBACK pCallback, PVOID pContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
 	const auto pTpIo = (PFULL_TP_IO)CreateThreadpoolIo(hFile, pCallback, pContext, pCallbackEnviron);
-	if (pTpIo == NULL) {
+	if (NULL == pTpIo) {
 		throw std::runtime_error(GetLastErrorString("CreateThreadpoolIo", GetLastError()));
 	}
 	return pTpIo;
@@ -51,7 +51,7 @@ PFULL_TP_JOB w_TpAllocJobNotification(HANDLE hJob, PVOID pCallback, PVOID pConte
 
 PFULL_TP_TIMER w_CreateThreadpoolTimer(PTP_TIMER_CALLBACK pTimerCallback, PVOID pTimerContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
 	const auto pTpTimer = (PFULL_TP_TIMER)CreateThreadpoolTimer(pTimerCallback, pTimerContext, pCallbackEnviron);
-	if (pTpTimer == NULL) {
+	if (NULL == pTpTimer) {
 		throw std::runtime_error(GetLastErrorString("CreateThreadpoolTimer", GetLastError()));
 	}
 

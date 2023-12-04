@@ -11,19 +11,18 @@ void w_ZwAssociateWaitCompletionPacket(
     PBOOLEAN AlreadySignaled
 ) 
 {
-    const auto Ntstatus = ZwAssociateWaitCompletionPacket(
-        WaitCopmletionPacketHandle,
-        IoCompletionHandle,
-        TargetObjectHandle,
-        KeyContext, 
-        ApcContext,
-        IoStatus,
-        IoStatusInformation,
-        AlreadySignaled);
-    if (!NT_SUCCESS(Ntstatus)) 
-    {
-        throw std::runtime_error(GetLastErrorString("ZwAssociateWaitCompletionPacket", RtlNtStatusToDosError(Ntstatus)));
-    }
+    NT_SUCCESS_OR_RAISE(
+        "ZwAssociateWaitCompletionPacket",
+        ZwAssociateWaitCompletionPacket(
+            WaitCopmletionPacketHandle,
+            IoCompletionHandle,
+            TargetObjectHandle,
+            KeyContext,
+            ApcContext,
+            IoStatus,
+            IoStatusInformation,
+            AlreadySignaled)
+    );
 }
 
 void w_ZwSetInformationFile(
@@ -34,31 +33,32 @@ void w_ZwSetInformationFile(
     ULONG FileInformationClass
 )
 {
-    const auto Ntstatus = ZwSetInformationFile(hFile, IoStatusBlock, FileInformation, Length, FileInformationClass);
-    if (!NT_SUCCESS(Ntstatus))
-    {
-        throw std::runtime_error(GetLastErrorString("ZwSetInformationFile", RtlNtStatusToDosError(Ntstatus)));
-    }
+    NT_SUCCESS_OR_RAISE(
+        "ZwSetInformationFile",
+        ZwSetInformationFile(
+            hFile,
+            IoStatusBlock,
+            FileInformation,
+            Length,
+            FileInformationClass)
+    );
 }
 
 HANDLE w_NtAlpcCreatePort(POBJECT_ATTRIBUTES ObjectAttributes, PALPC_PORT_ATTRIBUTES PortAttributes) {
     HANDLE hAlpc;
-    const auto Ntstatus = NtAlpcCreatePort(&hAlpc, ObjectAttributes, PortAttributes);
-    if (!NT_SUCCESS(Ntstatus))
-    {
-        throw std::runtime_error(GetLastErrorString("NtAlpcCreatePort", RtlNtStatusToDosError(Ntstatus)));
-    }
-
+    NT_SUCCESS_OR_RAISE(
+        "NtAlpcCreatePort",
+        NtAlpcCreatePort(&hAlpc, ObjectAttributes, PortAttributes)
+    );
     return hAlpc;
 }
 
 void w_NtAlpcSetInformation(HANDLE hAlpc, ULONG PortInformationClass, PVOID PortInformation, ULONG Length) 
 {
-    const auto Ntstatus = NtAlpcSetInformation(hAlpc, PortInformationClass, PortInformation, Length);
-    if (!NT_SUCCESS(Ntstatus))
-    {
-        throw std::runtime_error(GetLastErrorString("NtAlpcSetInformation", RtlNtStatusToDosError(Ntstatus)));
-    }
+    NT_SUCCESS_OR_RAISE(
+        "NtAlpcSetInformation", 
+         NtAlpcSetInformation(hAlpc, PortInformationClass, PortInformation, Length)
+    );
 }
 
 
@@ -76,22 +76,21 @@ HANDLE w_NtAlpcConnectPort(
 ) 
 {
     HANDLE hAlpc;
-    const auto Ntstatus = NtAlpcConnectPort(
-        &hAlpc,
-        PortName, 
-        ObjectAttributes,
-        PortAttributes,
-        ConnectionFlags, 
-        RequiredServerSid,
-        ConnectionMessage,
-        ConnectMessageSize,
-        OutMessageAttributes,
-        InMessageAttributes, 
-        Timeout);
-    if (!NT_SUCCESS(Ntstatus)) 
-    {
-        throw std::runtime_error(GetLastErrorString("NtAlpcConnectPort", RtlNtStatusToDosError(Ntstatus)));
-    }
+    NT_SUCCESS_OR_RAISE(
+        "NtAlpcConnectPort",
+        NtAlpcConnectPort(
+            &hAlpc,
+            PortName,
+            ObjectAttributes,
+            PortAttributes,
+            ConnectionFlags,
+            RequiredServerSid,
+            ConnectionMessage,
+            ConnectMessageSize,
+            OutMessageAttributes,
+            InMessageAttributes,
+            Timeout)
+    );
 
     return hAlpc;
 }
@@ -99,28 +98,39 @@ HANDLE w_NtAlpcConnectPort(
 BOOLEAN w_RtlAdjustPrivilege(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread)
 {
     BOOLEAN Enabled = NULL;
-    const auto Ntstatus = RtlAdjustPrivilege(Privilege, Enable, CurrentThread, &Enabled);
-    if (!NT_SUCCESS(Ntstatus))
-    {
-        throw std::runtime_error(GetLastErrorString("RtlAdjustPrivilege", RtlNtStatusToDosError(Ntstatus)));
-    }
+    NT_SUCCESS_OR_RAISE(
+        "RtlAdjustPrivilege", 
+        RtlAdjustPrivilege(
+            Privilege, 
+            Enable,
+            CurrentThread,
+            &Enabled)
+    );
     return Enabled;
 }
 
 void w_ZwSetIoCompletion(HANDLE IoCompletionHandle, PVOID KeyContext, PVOID ApcContext, NTSTATUS IoStatus, ULONG_PTR IoStatusInformation)
 {
-    const auto Ntstatus = ZwSetIoCompletion(IoCompletionHandle, KeyContext, ApcContext, IoStatus, IoStatusInformation);
-    if (!NT_SUCCESS(Ntstatus))
-    {
-        throw std::runtime_error(GetLastErrorString("ZwSetIoCompletion", RtlNtStatusToDosError(Ntstatus)));
-    }
+    NT_SUCCESS_OR_RAISE(
+        "ZwSetIoCompletion",
+        ZwSetIoCompletion(
+            IoCompletionHandle,
+            KeyContext,
+            ApcContext,
+            IoStatus,
+            IoStatusInformation)
+    );
 }
 
 void w_NtSetTimer2(HANDLE TimerHandle, PLARGE_INTEGER DueTime, PLARGE_INTEGER Period, PT2_SET_PARAMETERS Parameters) 
 {
-    const auto Ntstatus = NtSetTimer2(TimerHandle, DueTime, Period, Parameters);
-    if (!NT_SUCCESS(Ntstatus))
-    {
-        throw std::runtime_error(GetLastErrorString("NtSetTimer2", RtlNtStatusToDosError(Ntstatus)));
-    }
+    NT_SUCCESS_OR_RAISE(
+        "NtSetTimer2",
+        NtSetTimer2(
+            TimerHandle,
+            DueTime,
+            Period,
+            Parameters)
+    );
+
 }

@@ -8,11 +8,15 @@ void w_NtQueryInformationWorkerFactory(
     PULONG ReturnLength
 ) 
 {
-    const auto Ntstatus = NtQueryInformationWorkerFactory(hWorkerFactory, WorkerFactoryInformationClass, WorkerFactoryInformation, WorkerFactoryInformationLength, ReturnLength);
-    if (!NT_SUCCESS(Ntstatus))
-    {
-        throw std::runtime_error(GetLastErrorString("NtQueryInformationWorkerFactory", RtlNtStatusToDosError(Ntstatus)));
-    }
+    NT_SUCCESS_OR_RAISE(
+        "NtQueryInformationWorkerFactory",
+        NtQueryInformationWorkerFactory(
+            hWorkerFactory, 
+            WorkerFactoryInformationClass, 
+            WorkerFactoryInformation, 
+            WorkerFactoryInformationLength, 
+            ReturnLength)
+    );
 }
 
 void w_NtSetInformationWorkerFactory(
@@ -22,20 +26,12 @@ void w_NtSetInformationWorkerFactory(
     ULONG WorkerFactoryInformationLength
 )
 {
-    const auto Ntstatus = NtSetInformationWorkerFactory(hWorkerFactory, WorkerFactoryInformationClass, WorkerFactoryInformation, WorkerFactoryInformationLength);
-    if (!NT_SUCCESS(Ntstatus))
-    {
-        throw std::runtime_error(GetLastErrorString("NtSetInformationWorkerFactory", RtlNtStatusToDosError(Ntstatus)));
-    }
-}
-
-void w_NtReleaseWorkerFactoryWorker(
-    HANDLE hWorkerFactory
-) 
-{
-    const auto Ntstatus = NtReleaseWorkerFactoryWorker(hWorkerFactory);
-    if (!NT_SUCCESS(Ntstatus))
-    {
-        throw std::runtime_error(GetLastErrorString("NtReleaseWorkerFactoryWorker", RtlNtStatusToDosError(Ntstatus)));
-    }
+    NT_SUCCESS_OR_RAISE(
+        "NtSetInformationWorkerFactory", 
+        NtSetInformationWorkerFactory(
+            hWorkerFactory, 
+            WorkerFactoryInformationClass, 
+            WorkerFactoryInformation, 
+            WorkerFactoryInformationLength)
+    );
 }

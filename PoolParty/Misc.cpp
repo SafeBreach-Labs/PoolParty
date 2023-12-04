@@ -13,7 +13,7 @@ std::string w_FormatMessageA(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId,
 		reinterpret_cast<LPSTR>(&pErrorText),
 		nSize,
 		Arguments);
-	if (szErrorText == 0) 
+	if (0 == szErrorText) 
 	{
 		std::ostringstream oss;
 		oss << "FormatMessageA failed: " << GetLastError();

@@ -38,15 +38,46 @@ void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuf
 
 void w_SetEvent(HANDLE hEvent);
 
+// ----------------------//
+// Inline error handlers //
+// ----------------------//
+
+inline void RAISE_IF_FALSE(std::string FunctionName, BOOL Status)
+{
+	if (!Status)
+	{
+		throw std::runtime_error(GetLastErrorString(FunctionName, GetLastError()));
+	}
+}
+
+inline HANDLE RAISE_IF_HANDLE_INVALID(std::string FunctionName, HANDLE hObject)
+{
+	if (NULL == hObject || INVALID_HANDLE_VALUE == hObject)
+	{
+		throw std::runtime_error(GetLastErrorString(FunctionName, GetLastError()));
+	}
+	return hObject;
+}
+
+// ----------//
+// Templates //
+// ----------//
+
 template<typename TStruct>
 std::unique_ptr<TStruct> w_ReadProcessMemory(HANDLE hTargetPid, LPVOID BaseAddress)
 {
 	auto Buffer = std::make_unique<TStruct>();
 	auto BufferSize = sizeof(TStruct);
 	SIZE_T szNumberOfBytesRead;
-	if (!ReadProcessMemory(hTargetPid, BaseAddress, Buffer.get(), BufferSize, &szNumberOfBytesRead)) {
-		throw std::runtime_error(GetLastErrorString("ReadProcessMemory", GetLastError()));
-	}
+	RAISE_IF_FALSE(
+		"ReadProcessMemory",
+		ReadProcessMemory(
+			hTargetPid, 
+			BaseAddress, 
+			Buffer.get(), 
+			BufferSize, 
+			&szNumberOfBytesRead)
+	);
 
 	if (BufferSize != szNumberOfBytesRead) {
 		std::printf("WARNING: Read %d bytes instead of %d bytes\n", szNumberOfBytesRead, BufferSize);
