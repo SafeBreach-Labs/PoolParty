@@ -38,9 +38,9 @@ void w_WriteProcessMemory(HANDLE hTargetPid, LPVOID AllocatedMemory, LPVOID pBuf
 
 void w_SetEvent(HANDLE hEvent);
 
-// ----------------------//
-// Inline error handlers //
-// ----------------------//
+// ---------------//
+// Error handlers //
+// ---------------//
 
 inline void RAISE_IF_FALSE(std::string FunctionName, BOOL Status)
 {

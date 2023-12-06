@@ -1,5 +1,7 @@
 #include "ThreadPool.hpp"
 
+// TODO: Use helper error handlers
+
 PFULL_TP_WORK w_CreateThreadpoolWork(PTP_WORK_CALLBACK pWorkCallback, PVOID pWorkContext, PTP_CALLBACK_ENVIRON pCallbackEnviron) {
 	const auto pTpWork = (PFULL_TP_WORK)CreateThreadpoolWork(pWorkCallback, pWorkContext, pCallbackEnviron);
 	if (NULL == pTpWork) {

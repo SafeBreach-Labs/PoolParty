@@ -267,9 +267,9 @@ void w_ZwSetIoCompletion(HANDLE IoCompletionHandle, PVOID KeyContext, PVOID ApcC
 
 void w_NtSetTimer2(HANDLE TimerHandle, PLARGE_INTEGER DueTime, PLARGE_INTEGER Period, PT2_SET_PARAMETERS Parameters);
 
-// ----------------------//
-// Inline error handlers //
-// ----------------------//
+// ---------------//
+// Error handlers //
+// --------------//
 
 inline void NT_SUCCESS_OR_RAISE(std::string FunctionName, NTSTATUS Ntstatus)
 {
@@ -296,7 +296,10 @@ std::vector<BYTE> w_QueryInformation(const std::string QueryFunctionName, TQuery
 		Ntstatus = QueryFunction(QueryFunctionArgs..., Information.data(), InformationLength, &InformationLength);
 	} while (STATUS_INFO_LENGTH_MISMATCH == Ntstatus);
 
-	NT_SUCCESS_OR_RAISE("QueryFunctionName", Ntstatus)
+	if (!NT_SUCCESS(Ntstatus)) 
+	{
+		throw std::runtime_error(GetLastErrorString(QueryFunctionName, RtlNtStatusToDosError(Ntstatus)));
+	}
 
 	return Information;
 }

